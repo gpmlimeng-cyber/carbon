@@ -1,0 +1,181 @@
+// SPDX-License-Identifier: LicenseRef-Carbon-Commercial
+// Carbon Enterprise file, licensed only under the Carbon Commercial License
+// (packages/ee/LICENSE). Not AGPL. Running, modifying, or copying it beyond those terms requires a commercial license.
+
+import { getCarbonServiceRole } from "@carbon/auth/client.server";
+import { emailHealthcheck } from "./email/hooks.server";
+import { revokeConnectionsForPiece } from "./integrations/connections";
+import {
+  ACTIVEPIECES_PIECES,
+  type ActivepiecesPiece
+} from "./integrations/pieces";
+import {
+  jiraHealthcheck,
+  jiraOnInstall,
+  jiraOnUninstall
+} from "./jira/hooks.server";
+import {
+  linearHealthcheck,
+  linearOnInstall,
+  linearOnUninstall
+} from "./linear/hooks.server";
+import { mountHealthcheck } from "./mount/hooks.server";
+import { onshapeHealthcheck, onshapeOnUninstall } from "./onshape/hooks.server";
+import {
+  ONSHAPE_GOVERNMENT_INTEGRATION_ID,
+  ONSHAPE_INTEGRATION_ID
+} from "./onshape/lib/connection";
+import { ONSHAPE_V2_INTEGRATION_ID } from "./onshape/lib/integration-id";
+import {
+  quickbooksOnInstall,
+  quickbooksOnUninstall
+} from "./quickbooks/hooks.server";
+import {
+  rampHealthcheck,
+  rampOnInstall,
+  rampOnUninstall,
+  rampOnUpdate
+} from "./ramp/hooks.server";
+import {
+  rilletHealthcheck,
+  rilletOnInstall,
+  rilletOnUninstall
+} from "./rillet/hooks.server";
+import {
+  senseHealthcheck,
+  senseOnSave,
+  senseOnUninstall
+} from "./sense/hooks.server";
+import { slackOnConnect } from "./slack/hooks.server";
+import {
+  stripeConnectHealthcheck,
+  stripeConnectOnInstall,
+  stripeConnectOnUninstall
+} from "./stripe-connect/hooks.server";
+import type { IntegrationServerHooks } from "./types";
+
+// Onshape keeps its release webhook subscription in lockstep with the asset-sync
+// toggle; the integration settings save calls this. onshapeConnectionHasWriteScope
+// lets the save tell a read-only connection to reconnect before enabling sync.
+export {
+  ensureOnshapeReleaseWebhook,
+  onshapeConnectionHasWriteScope
+} from "./onshape/hooks.server";
+
+import {
+  xeroHealthcheck,
+  xeroOnInstall,
+  xeroOnUninstall
+} from "./xero/hooks.server";
+
+/**
+ * A workflow-integration card's whole uninstall behaviour is "revoke the accounts
+ * it connected", and its `id` IS the piece name — so a new piece needs no entry
+ * here. Health for a piece card is decided in erp's `getIntegrationHealth` (it
+ * needs the allowlist's required scopes, which ee cannot see); only uninstall
+ * lives here. Slack's card serves the Carbon Assistant and workflow steps alike,
+ * so uninstalling it revokes every connected workspace.
+ */
+const pieceConnectHooks: Partial<
+  Record<ActivepiecesPiece, IntegrationServerHooks["onConnect"]>
+> = {
+  slack: slackOnConnect
+};
+
+const pieceHooks: Record<string, IntegrationServerHooks> = Object.fromEntries(
+  ACTIVEPIECES_PIECES.map((piece) => [
+    piece,
+    {
+      onUninstall: (companyId: string) =>
+        revokeConnectionsForPiece(getCarbonServiceRole(), piece, companyId),
+      onConnect: pieceConnectHooks[piece]
+    }
+  ])
+);
+
+/**
+ * Server-side hooks registry for integrations.
+ *
+ * Hooks that depend on server-only modules (like getCarbonServiceRole)
+ * cannot live in the integration config files because those are bundled
+ * for both client and server. This registry maps integration IDs to
+ * their server-only lifecycle hooks.
+ */
+const serverHooks: Record<string, IntegrationServerHooks> = {
+  ...pieceHooks,
+  email: {
+    onHealthcheck: emailHealthcheck
+  },
+  // The trackers' onUpdate re-runs the install convergence, so a settings
+  // save heals the `${tracker}-issue-sync` subscriptions of an old install.
+  jira: {
+    onHealthcheck: jiraHealthcheck,
+    onInstall: jiraOnInstall,
+    onUpdate: jiraOnInstall,
+    onUninstall: jiraOnUninstall
+  },
+  linear: {
+    onHealthcheck: linearHealthcheck,
+    onInstall: linearOnInstall,
+    onUpdate: linearOnInstall,
+    onUninstall: linearOnUninstall
+  },
+  mount: {
+    onHealthcheck: mountHealthcheck
+  },
+  onshape: {
+    onUninstall: onshapeOnUninstall,
+    onHealthcheck: onshapeHealthcheck(ONSHAPE_INTEGRATION_ID)
+  },
+  "onshape-government": {
+    onUninstall: onshapeOnUninstall,
+    onHealthcheck: onshapeHealthcheck(ONSHAPE_GOVERNMENT_INTEGRATION_ID)
+  },
+  "onshape-v2": {
+    onHealthcheck: onshapeHealthcheck(ONSHAPE_V2_INTEGRATION_ID)
+  },
+  // The accounting providers' onUpdate re-runs the same subscription
+  // convergence as onInstall: a settings save on an existing install
+  // self-heals the company's `${provider}-sync` subscription rows whenever
+  // REQUIRED_SYNC_SUBSCRIPTIONS grows.
+  quickbooks: {
+    onInstall: quickbooksOnInstall,
+    onUpdate: quickbooksOnInstall,
+    onUninstall: quickbooksOnUninstall
+  },
+  ramp: {
+    onInstall: rampOnInstall,
+    onUpdate: rampOnUpdate,
+    onUninstall: rampOnUninstall,
+    onHealthcheck: rampHealthcheck
+  },
+  rillet: {
+    onHealthcheck: rilletHealthcheck,
+    onInstall: rilletOnInstall,
+    onUpdate: rilletOnInstall,
+    onUninstall: rilletOnUninstall
+  },
+  sense: {
+    onHealthcheck: senseHealthcheck,
+    onInstall: senseOnSave,
+    onUpdate: senseOnSave,
+    onUninstall: senseOnUninstall
+  },
+  xero: {
+    onHealthcheck: xeroHealthcheck,
+    onInstall: xeroOnInstall,
+    onUpdate: xeroOnInstall,
+    onUninstall: xeroOnUninstall
+  },
+  "stripe-connect": {
+    onHealthcheck: stripeConnectHealthcheck,
+    onInstall: stripeConnectOnInstall,
+    onUninstall: stripeConnectOnUninstall
+  }
+};
+
+export function getIntegrationServerHooks(
+  integrationId: string
+): IntegrationServerHooks | undefined {
+  return serverHooks[integrationId];
+}
