@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+    <style>
+      .h{fill:#111827;font-weight:700;font-size:24px}
+      .sub{fill:#6b7280;font-size:13px}
+      .bt{fill:#111827;font-weight:700;font-size:15px}
+      .bs{fill:#6b7280;font-size:11.5px}
+      .li{fill:#0f6b5c;font-weight:700;font-size:14px}
+      .ri{fill:#3b4ea0;font-weight:700;font-size:14px}
+      .sm{fill:#6b7280;font-size:11px}
+      .box{fill:#ffffff;stroke:#e5e7eb;stroke-width:1.2}
+      .tealpanel{fill:#ecf7f4;stroke:#8dcdbf;stroke-width:1.2}
+      .bluepanel{fill:#f4f6ff;stroke:#c7cff0;stroke-width:1.2}
+      .lnC{stroke:#0f6b5c;stroke-width:1.8;fill:none}
+      .lnS{stroke:#94a3b8;stroke-width:1.5;fill:none}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="40" y="52" class="h">图 02 · 职责边界与接口分工</text>
+  <text x="40" y="78" class="sub">左侧只做执行与配置，右侧只做记录与账；中间每一条线都是一个契约接口，没有第二条数据通路</text>
+
+  <!-- Carbon panel -->
+  <rect x="40" y="104" width="600" height="756" rx="12" class="tealpanel"/>
+  <text x="60" y="134" class="li">Carbon · SoE（Engagement）</text>
+  <text x="60" y="154" class="bs">拥有：EBOM / 配置 · 执行明细 · SN 血缘 · 装机和质保</text>
+
+  <!-- SAP panel -->
+  <rect x="960" y="104" width="600" height="756" rx="12" class="bluepanel"/>
+  <text x="980" y="134" class="ri">SAP · SoR（Record）</text>
+  <text x="980" y="154" class="bs">拥有：主数据 · 订单 · 库存与估值 · 成本 · 发票 · 序列号登记</text>
+
+  <!-- row 1 -->
+  <rect x="58" y="186" width="564" height="88" rx="8" class="box"/>
+  <text x="74" y="214" class="bt">报价 / 方案配置</text>
+  <text x="74" y="236" class="bs">配置模板 · EBOM 版本 · 报价单</text>
+  <text x="74" y="256" class="bs">→ 销售订单草稿，提交 SAP</text>
+  <rect x="978" y="186" width="564" height="88" rx="8" class="box"/>
+  <text x="994" y="214" class="bt">主数据（物料 / 客户 / 供应商）</text>
+  <text x="994" y="236" class="bs">工厂视图 · 评估类 · 可用性</text>
+  <text x="994" y="256" class="bs">只读同步，Carbon 建本地索引</text>
+  <line x1="956" y1="220" x2="626" y2="220" class="lnS" marker-end="url(#a)"/>
+  <text x="791" y="212" class="sm" text-anchor="middle">I-01 / I-02 / I-03　增量同步</text>
+  <line x1="626" y1="250" x2="956" y2="250" class="lnC" marker-end="url(#at)"/>
+  <text x="791" y="268" class="sm" text-anchor="middle">主数据申请（新建物料 / 客户）</text>
+
+  <!-- row 2 -->
+  <rect x="58" y="292" width="564" height="88" rx="8" class="box"/>
+  <text x="74" y="320" class="bt">项目执行视图</text>
+  <text x="74" y="342" class="bs">里程碑 · 交付计划 · 现场进度</text>
+  <text x="74" y="362" class="bs">只展示 SAP PS 的事实</text>
+  <rect x="978" y="292" width="564" height="88" rx="8" class="box"/>
+  <text x="994" y="320" class="bt">项目 / WBS / 里程碑</text>
+  <text x="994" y="342" class="bs">WBS 结构 · 预算 · 收入确认</text>
+  <text x="994" y="362" class="bs">项目成本在 CO 归集</text>
+  <line x1="956" y1="326" x2="626" y2="326" class="lnS" marker-end="url(#a)"/>
+  <text x="791" y="318" class="sm" text-anchor="middle">I-16　WBS / 里程碑下发</text>
+  <line x1="626" y1="356" x2="956" y2="356" class="lnC" marker-end="url(#at)"/>
+  <text x="791" y="374" class="sm" text-anchor="middle">执行进度 / 完工反馈</text>
+
+  <!-- row 3 -->
+  <rect x="58" y="398" width="564" height="88" rx="8" class="box"/>
+  <text x="74" y="426" class="bt">车间执行（执行单 / 报工）</text>
+  <text x="74" y="448" class="bs">工序作业 · 扫码开工 · 工时与废品</text>
+  <text x="74" y="468" class="bs">SN 绑定在此发生</text>
+  <rect x="978" y="398" width="564" height="88" rx="8" class="box"/>
+  <text x="994" y="426" class="bt">生产订单</text>
+  <text x="994" y="448" class="bs">订单号 · 组件需求 · 计划日期</text>
+  <text x="994" y="468" class="bs">状态与过账由 SAP 决定</text>
+  <line x1="956" y1="432" x2="626" y2="432" class="lnS" marker-end="url(#a)"/>
+  <text x="791" y="424" class="sm" text-anchor="middle">I-09　生产订单下发</text>
+  <line x1="626" y1="462" x2="956" y2="462" class="lnC" marker-end="url(#at)"/>
+  <text x="791" y="480" class="sm" text-anchor="middle">I-10　报工确认（confirmation）</text>
+
+  <!-- row 4 -->
+  <rect x="58" y="504" width="564" height="88" rx="8" class="box"/>
+  <text x="74" y="532" class="bt">质量采集</text>
+  <text x="74" y="554" class="bs">EOL 实测值 · 照片 · 判定建议</text>
+  <text x="74" y="574" class="bs">NCR 流程在 Carbon 内闭环</text>
+  <rect x="978" y="504" width="564" height="88" rx="8" class="box"/>
+  <text x="994" y="532" class="bt">检验批 / 使用决策</text>
+  <text x="994" y="554" class="bs">检验批号 · 特性上下限</text>
+  <text x="994" y="574" class="bs">入库/放行受 QM 控制</text>
+  <line x1="956" y1="538" x2="626" y2="538" class="lnS" marker-end="url(#a)"/>
+  <text x="791" y="530" class="sm" text-anchor="middle">I-11　检验批下发</text>
+  <line x1="626" y1="568" x2="956" y2="568" class="lnC" marker-end="url(#at)"/>
+  <text x="791" y="586" class="sm" text-anchor="middle">I-12　检验结果回写</text>
+
+  <!-- row 5 -->
+  <rect x="58" y="610" width="564" height="88" rx="8" class="box"/>
+  <text x="74" y="638" class="bt">SN 装配血缘</text>
+  <text x="74" y="660" class="bs">电芯批次 → 模组 → 簇 → 柜 → 站点</text>
+  <text x="74" y="680" class="bs">父子关系只在 Carbon 落库</text>
+  <rect x="978" y="610" width="564" height="88" rx="8" class="box"/>
+  <text x="994" y="638" class="bt">序列号登记（SER）</text>
+  <text x="994" y="660" class="bs">设备级 SN · 库存归属 · 合规</text>
+  <text x="994" y="680" class="bs">电芯级不进 SAP</text>
+  <line x1="956" y1="644" x2="626" y2="644" class="lnS" marker-end="url(#a)"/>
+  <text x="791" y="636" class="sm" text-anchor="middle">I-13　序列号主数据</text>
+  <line x1="626" y1="674" x2="956" y2="674" class="lnC" marker-end="url(#at)"/>
+  <text x="791" y="692" class="sm" text-anchor="middle">关键节点回传（柜 / 集装箱）</text>
+
+  <!-- row 6 -->
+  <rect x="58" y="716" width="564" height="88" rx="8" class="box"/>
+  <text x="74" y="744" class="bt">售后 / 质保 / 派工</text>
+  <text x="74" y="766" class="bs">装机台账 · 质保起算 · 备件消耗</text>
+  <text x="74" y="786" class="bs">SAP 无对应模块，Carbon 拥有</text>
+  <rect x="978" y="716" width="564" height="88" rx="8" class="box"/>
+  <text x="994" y="744" class="bt">成本与总账（CO / FI）</text>
+  <text x="994" y="766" class="bs">服务成本 · 项目毛利 · 期间损益</text>
+  <text x="994" y="786" class="bs">Carbon 只读，不重算</text>
+  <line x1="626" y1="760" x2="956" y2="760" class="lnC" marker-end="url(#at)"/>
+  <text x="791" y="752" class="sm" text-anchor="middle">服务成本 / 工时回传</text>
+
+  <!-- legend -->
+  <line x1="40" y1="898" x2="90" y2="898" class="lnC" marker-end="url(#at)"/>
+  <text x="100" y="902" class="sm">Carbon 发起：写请求，必须带幂等键，由 SAP 决定是否接受</text>
+  <line x1="600" y1="898" x2="650" y2="898" class="lnS" marker-end="url(#a)"/>
+  <text x="660" y="902" class="sm">SAP 发起：状态 / 主数据回传，事件优先、轮询兜底</text>
+  <text x="40" y="940" class="sm">一条规则：任何一行只能有一个箭头“拥有状态”；双向箭头仅表示“一写一回”，不代表两边都能改同一字段。</text>
+  <text x="40" y="966" class="sm">例外处理：Carbon 侧出现的 SAP 拒绝（4xx / 消息号），一律展示原因并保持本地单据为“未生效”，不允许“先按成功处理”。</text>
+</svg>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>架构图 · 索引</title>
+<style>
+  :root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#0f6b5c;--panel:#f8fafc}
+  *{box-sizing:border-box}
+  body{margin:0;padding:40px 44px 64px;background:#fff;color:var(--ink);
+       font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,sans-serif}
+  header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+  header p{margin:0;color:var(--muted);font-size:13.5px}
+  .badge{font-size:12px;color:var(--accent);border:1px solid #8dcdbf;background:#ecf7f4;border-radius:999px;padding:4px 12px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  figure{margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  figure img{display:block;width:100%;height:auto;border-bottom:1px solid var(--line)}
+  figcaption{padding:12px 16px 14px;font-size:13px;color:var(--muted)}
+  figcaption b{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+  .foot{margin-top:28px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+  @media print{body{padding:0}.grid{grid-template-columns:1fr}figure{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Carbon（前台）+ SAP（后台）· 架构图</h1>
+    <p>系统集成 + 按项目交付型储能企业 · v1.0 · 2026-11-14</p>
+  </div>
+  <span class="badge">6 张 · SVG 源文件同目录</span>
+</header>
+
+<div class="grid">
+  <figure><img src="01-总体架构.svg" alt="总体架构" />
+    <figcaption><b>图 01 · 总体架构</b>五层分区：用户 / 接入 / 应用 / 集成 / SAP 核心，三条通道与数据归属</figcaption></figure>
+
+  <figure><img src="02-职责边界.svg" alt="职责边界" />
+    <figcaption><b>图 02 · 职责边界与接口分工</b>SoE 与 SoR 的逐行对应，每个箭头即一个契约接口</figcaption></figure>
+
+  <figure><img src="03-集成拓扑.svg" alt="集成拓扑" />
+    <figcaption><b>图 03 · 集成拓扑与三条通道</b>读、同步写、异步批量的超时与降级策略，及 18 个接口落位</figcaption></figure>
+
+  <figure><img src="04-写请求生命周期.svg" alt="写请求生命周期" />
+    <figcaption><b>图 04 · 写请求生命周期</b>outbox 状态机、失败矩阵、对账与监控四项</figcaption></figure>
+
+  <figure><img src="05-部署与网络.svg" alt="部署与网络" />
+    <figcaption><b>图 05 · 部署与网络分区</b>四区隔离、组件副本、端口与协议、RPO/RTO</figcaption></figure>
+
+  <figure><img src="06-追溯与质量.svg" alt="追溯与质量" />
+    <figcaption><b>图 06 · 追溯与质量数据流</b>电芯批次到项目站点的实体链，两套事实的归属与质量闭环</figcaption></figure>
+</div>
+
+<div class="foot">用法：直接把同目录的 .svg 拖入 Figma / Illustrator / Keynote 可无损编辑；.png 为 2× 导出，适合 PPT 与文档。</div>
+</body>
+</html>

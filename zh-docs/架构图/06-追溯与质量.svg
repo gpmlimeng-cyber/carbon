@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+    <style>
+      .h{fill:#111827;font-weight:700;font-size:24px}
+      .sub{fill:#6b7280;font-size:13px}
+      .sec{fill:#111827;font-weight:700;font-size:15px}
+      .bt{fill:#111827;font-weight:700;font-size:14px}
+      .bs{fill:#6b7280;font-size:11px}
+      .sm{fill:#6b7280;font-size:11.5px}
+      .mono{font-family:'SFMono-Regular',Menlo,Consolas,monospace;font-size:11px;fill:#374151}
+      .box{fill:#ffffff;stroke:#dbe3ea;stroke-width:1.2}
+      .tealbox{fill:#ecf7f4;stroke:#8dcdbf;stroke-width:1.3}
+      .bluebox{fill:#f4f6ff;stroke:#c7cff0;stroke-width:1.3}
+      .ln{stroke:#94a3b8;stroke-width:1.5;fill:none}
+      .lnT{stroke:#0f6b5c;stroke-width:1.9;fill:none}
+      .lnB{stroke:#3b4ea0;stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="40" y="52" class="h">图 06 · 追溯与质量的数据流（双系统）</text>
+  <text x="40" y="78" class="sub">SAP 是“登记处”，Carbon 是“关系与实测的拥有者”；追溯查询是聚合视图，不是第三份数据</text>
+
+  <!-- chain -->
+  <text x="40" y="126" class="sec">一、实体链：电芯批次 → 模组 → 簇 → 柜 → 站点</text>
+  <rect x="40" y="146" width="270" height="120" rx="8" class="box"/>
+  <text x="56" y="172" class="bt">电芯批次</text>
+  <text x="56" y="194" class="bs">SAP：批次号 · 供应商 · 制造日期</text>
+  <text x="56" y="214" class="bs">Carbon：容量 / 内阻 / 来源收货单</text>
+  <text x="56" y="240" class="bs">粒度：批次（不做序列号）</text>
+
+  <rect x="355" y="146" width="270" height="120" rx="8" class="box"/>
+  <text x="371" y="172" class="bt">模组 SN</text>
+  <text x="371" y="194" class="bs">SAP：序列号登记（可选）</text>
+  <text x="371" y="214" class="bs">Carbon：装配工单 · 操作人 · 时间</text>
+  <text x="371" y="240" class="bs">血缘：投入了哪些电芯批次</text>
+
+  <rect x="670" y="146" width="270" height="120" rx="8" class="box"/>
+  <text x="686" y="172" class="bt">簇 SN</text>
+  <text x="686" y="194" class="bs">SAP：序列号 · 库存归属</text>
+  <text x="686" y="214" class="bs">Carbon：模组明细 · 线束 · 紧固记录</text>
+  <text x="686" y="240" class="bs">血缘：簇 → 模组</text>
+
+  <rect x="985" y="146" width="270" height="120" rx="8" class="box"/>
+  <text x="1001" y="172" class="bt">集装箱 / 机柜 SN</text>
+  <text x="1001" y="194" class="bs">SAP：设备级序列号（对外唯一）</text>
+  <text x="1001" y="214" class="bs">Carbon：簇清单 · 消防/温控 · 测试</text>
+  <text x="1001" y="240" class="bs">血缘：柜 → 簇 → 模组 → 批次</text>
+
+  <rect x="1300" y="146" width="270" height="120" rx="8" class="bluebox"/>
+  <text x="1316" y="172" class="bt">项目站点 / 装机</text>
+  <text x="1316" y="194" class="bs">SAP：交货单 · 收入确认</text>
+  <text x="1316" y="214" class="bs">Carbon：装机台账 · 投运日期</text>
+  <text x="1316" y="240" class="bs">质保起算的锚点</text>
+
+  <line x1="310" y1="206" x2="351" y2="206" class="lnT" marker-end="url(#at)"/>
+  <text x="330" y="198" class="sm" text-anchor="middle">投入</text>
+  <line x1="625" y1="206" x2="666" y2="206" class="lnT" marker-end="url(#at)"/>
+  <text x="645" y="198" class="sm" text-anchor="middle">集成</text>
+  <line x1="940" y1="206" x2="981" y2="206" class="lnT" marker-end="url(#at)"/>
+  <text x="960" y="198" class="sm" text-anchor="middle">集成</text>
+  <line x1="1255" y1="206" x2="1296" y2="206" class="lnB" marker-end="url(#a)"/>
+  <text x="1275" y="198" class="sm" text-anchor="middle">交付</text>
+
+  <!-- attached records -->
+  <rect x="355" y="300" width="270" height="88" rx="8" class="box"/>
+  <text x="371" y="324" class="bt">检验记录（EOL / 过程）</text>
+  <text x="371" y="346" class="bs">SAP：检验批 · 特性上下限 · 判定</text>
+  <text x="371" y="366" class="bs">Carbon：实测值 · 设备 · 照片</text>
+  <line x1="490" y1="266" x2="490" y2="296" class="ln" marker-end="url(#a)"/>
+
+  <rect x="670" y="300" width="270" height="88" rx="8" class="box"/>
+  <text x="686" y="324" class="bt">不合格 / NCR</text>
+  <text x="686" y="346" class="bs">Carbon：发现 · 隔离 · 处置流程</text>
+  <text x="686" y="366" class="bs">SAP：报废/退库的库存移动</text>
+  <line x1="805" y1="266" x2="805" y2="296" class="ln" marker-end="url(#a)"/>
+
+  <rect x="1300" y="300" width="270" height="88" rx="8" class="tealbox"/>
+  <text x="1316" y="324" class="bt">质保 / 索赔</text>
+  <text x="1316" y="346" class="bs">Carbon：质保期 · 备件 · 现场工单</text>
+  <text x="1316" y="366" class="bs">SAP：服务成本回传</text>
+  <line x1="1435" y1="266" x2="1435" y2="296" class="ln" marker-end="url(#a)"/>
+
+  <rect x="985" y="300" width="270" height="88" rx="8" class="box"/>
+  <text x="1001" y="324" class="bt">随机文件包</text>
+  <text x="1001" y="346" class="bs">合格证 · 测试报告 · 铭牌</text>
+  <text x="1001" y="366" class="bs">随交货单交付客户</text>
+  <line x1="1120" y1="266" x2="1120" y2="296" class="ln" marker-end="url(#a)"/>
+
+  <!-- section 2 -->
+  <text x="40" y="432" class="sec">二、两条事实的归属（不要试图合并成一份）</text>
+  <rect x="40" y="450" width="480" height="118" rx="8" class="bluebox"/>
+  <text x="56" y="476" class="bt">SAP · 登记与合规</text>
+  <text x="56" y="500" class="bs">批次/序列号主数据 · 检验批与使用决策 · 库存归属与估值</text>
+  <text x="56" y="522" class="bs">回答：这台设备在账上是否合法、是否放行、值多少钱</text>
+  <text x="56" y="548" class="bs">粒度：设备级（柜 / 集装箱），电芯级不登记</text>
+
+  <rect x="540" y="450" width="480" height="118" rx="8" class="tealbox"/>
+  <text x="556" y="476" class="bt">Carbon · 关系与实测</text>
+  <text x="556" y="500" class="bs">父子血缘边 · 工单/工序/操作人 · 实测值 · 照片 · NCR</text>
+  <text x="556" y="522" class="bs">回答：这批电芯去了哪里、这台柜用了什么、谁做的</text>
+  <text x="556" y="548" class="bs">粒度：电芯批次 → 模组 → 簇 → 柜 → 站点</text>
+
+  <rect x="1040" y="450" width="530" height="118" rx="8" class="box"/>
+  <text x="1056" y="476" class="bt">追溯查询（聚合视图）</text>
+  <text x="1056" y="500" class="bs">向上递归：这个柜用了哪些电芯批次、哪一批检验记录</text>
+  <text x="1056" y="522" class="bs">向下递归：这批电芯流向了哪些项目与站点</text>
+  <text x="1056" y="548" class="bs">输出：CSV / PDF，带来源标注与生成时间</text>
+
+  <!-- section 3 -->
+  <text x="40" y="614" class="sec">三、质量闭环：SAP 建批，Carbon 采集，SAP 判定</text>
+  <rect x="40" y="632" width="280" height="96" rx="8" class="box"/>
+  <text x="56" y="658" class="bt">① SAP 建检验批</text>
+  <text x="56" y="680" class="bs">收货 / 生产入库触发</text>
+  <text x="56" y="700" class="bs">I-11 下发到 Carbon</text>
+
+  <rect x="360" y="632" width="300" height="96" rx="8" class="box"/>
+  <text x="376" y="658" class="bt">② Carbon 执行采集</text>
+  <text x="376" y="680" class="bs">检验计划 · 实测值 · 设备数据</text>
+  <text x="376" y="700" class="bs">不合格自动开 NCR 并隔离</text>
+
+  <rect x="700" y="632" width="280" height="96" rx="8" class="box"/>
+  <text x="716" y="658" class="bt">③ 结果回写</text>
+  <text x="716" y="680" class="bs">I-12 上传实测值</text>
+  <text x="716" y="700" class="bs">带幂等键，可重放</text>
+
+  <rect x="1020" y="632" width="280" height="96" rx="8" class="box"/>
+  <text x="1036" y="658" class="bt">④ SAP 判定</text>
+  <text x="1036" y="680" class="bs">使用决策：放行 / 让步 / 退货</text>
+  <text x="1036" y="700" class="bs">SAP 状态回传 Carbon</text>
+
+  <rect x="1340" y="632" width="230" height="96" rx="8" class="box"/>
+  <text x="1356" y="658" class="bt">⑤ 放行或隔离</text>
+  <text x="1356" y="680" class="bs">未放行不得入库/发运</text>
+  <text x="1356" y="700" class="bs">系统强制校验</text>
+
+  <line x1="320" y1="680" x2="356" y2="680" class="ln" marker-end="url(#a)"/>
+  <line x1="660" y1="680" x2="696" y2="680" class="ln" marker-end="url(#a)"/>
+  <line x1="980" y1="680" x2="1016" y2="680" class="ln" marker-end="url(#a)"/>
+  <line x1="1300" y1="680" x2="1336" y2="680" class="ln" marker-end="url(#a)"/>
+
+  <!-- rules -->
+  <rect x="40" y="760" width="760" height="140" rx="10" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="60" y="788" class="bt" style="font-size:14px">三条落地规则</text>
+  <text x="60" y="814" class="bs">1. SN 只在生产时生成，一旦生成不可修改；SAP 只登记设备级，电芯级留在 Carbon</text>
+  <text x="60" y="838" class="bs">2. 血缘边只追加不修改，更正用新边 + 作废标记，保留审计痕迹</text>
+  <text x="60" y="862" class="bs">3. 检验结果只追加，判定由 SAP 做；Carbon 不改判定，只补实测与证据</text>
+  <text x="60" y="886" class="bs">保留期：质保期 + 法规要求（建议 ≥10 年），到期归档冷存储</text>
+
+  <rect x="824" y="760" width="746" height="140" rx="10" fill="#ffffff" stroke="#dbe3ea"/>
+  <text x="844" y="788" class="bt" style="font-size:14px">追溯的四个真实用途（不是“为了合规好看”）</text>
+  <text x="844" y="814" class="bs">认证取证：UL9540 / GB 36276 / IEC 62619 审核时，直接导出过程记录</text>
+  <text x="844" y="838" class="bs">召回定界：某批电芯异常时，5 分钟内列出受影响的项目与站点</text>
+  <text x="844" y="862" class="bs">质保索赔：客户报故障，按 SN 反查到装配、测试与批次，判断责任方</text>
+  <text x="844" y="886" class="bs">工艺改进：同批次故障聚类，反推工序/供应商，形成质量闭环</text>
+
+  <text x="40" y="948" class="sm">反模式：在 Carbon 再存一份“官方 SN 台账”（必然与 SAP 不一致）；用自定义字段拼血缘（无法递归查询）；把检验判定放在 Carbon（审核时无人认）。</text>
+</svg>

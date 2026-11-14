@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3b4ea0"/></marker>
+    <style>
+      .h{fill:#111827;font-weight:700;font-size:24px}
+      .sub{fill:#6b7280;font-size:13px}
+      .lane{fill:#111827;font-weight:700;font-size:16px}
+      .tag{fill:#374151;font-size:12px}
+      .bt{fill:#111827;font-weight:700;font-size:14.5px}
+      .bs{fill:#6b7280;font-size:11.5px}
+      .id{fill:#0f6b5c;font-size:10.5px;font-weight:700}
+      .sm{fill:#6b7280;font-size:11px}
+      .box{fill:#ffffff;stroke:#dbe3ea;stroke-width:1.2}
+      .ln{stroke:#94a3b8;stroke-width:1.5;fill:none}
+      .lnT{stroke:#0f6b5c;stroke-width:1.9;fill:none}
+      .lnB{stroke:#3b4ea0;stroke-width:1.8;fill:none}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="40" y="52" class="h">图 03 · 集成拓扑与三条通道</text>
+  <text x="40" y="78" class="sub">同一条业务链路，按“读 / 关键写 / 批量写”拆成三条通道；每条通道的超时、重试、降级策略不同，不能混用</text>
+
+  <!-- lane 1 -->
+  <rect x="24" y="110" width="1552" height="220" rx="12" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="44" y="140" class="lane">① 同步查询（Read）</text>
+  <text x="220" y="140" class="tag">缓存优先 · 800ms 预算 · 超时降级为缓存值</text>
+
+  <rect x="40" y="170" width="340" height="110" rx="8" class="box"/>
+  <text x="56" y="196" class="bt">页面 / loader 请求</text>
+  <text x="56" y="218" class="bs">首屏渲染 · 表单可选值</text>
+  <text x="56" y="238" class="bs">业务人员无等待感</text>
+  <text x="56" y="262" class="bs">命中率目标 ≥80%</text>
+
+  <rect x="430" y="170" width="270" height="110" rx="8" class="box"/>
+  <text x="446" y="196" class="bt">Redis 缓存</text>
+  <text x="446" y="218" class="bs">TTL 30–60s</text>
+  <text x="446" y="238" class="bs">stale-while-revalidate</text>
+  <text x="446" y="262" class="bs">界面标注“数据截至 HH:mm”</text>
+
+  <rect x="760" y="170" width="270" height="110" rx="8" class="box"/>
+  <text x="776" y="196" class="bt">API 网关</text>
+  <text x="776" y="218" class="bs">OData GET 转发</text>
+  <text x="776" y="238" class="bs">鉴权 · 限流 · 转换</text>
+  <text x="776" y="262" class="bs">1 次重试，仍失败回缓存</text>
+
+  <rect x="1100" y="170" width="460" height="110" rx="8" class="box"/>
+  <text x="1116" y="196" class="bt">SAP 查询对象</text>
+  <text x="1116" y="218" class="bs">物料 / 客户 / 库存余额 / 订单状态</text>
+  <text x="1116" y="238" class="bs">检验批 / 序列号 / WBS / 成本汇总</text>
+  <text x="1116" y="262" class="bs">只读，不产生 SAP 侧变更</text>
+
+  <line x1="380" y1="225" x2="426" y2="225" class="ln" marker-end="url(#a)"/><text x="403" y="217" class="id" text-anchor="middle">hit</text>
+  <line x1="700" y1="225" x2="756" y2="225" class="ln" marker-end="url(#a)"/><text x="728" y="217" class="id" text-anchor="middle">miss</text>
+  <line x1="1030" y1="225" x2="1096" y2="225" class="ln" marker-end="url(#a)"/>
+  <text x="1063" y="217" class="id" text-anchor="middle">GET</text>
+  <text x="44" y="308" class="sm">接口：I-01 物料 · I-02 客户/供应商 · I-03 工厂/库位 · I-04 库存 · I-06 订单状态 · I-13 序列号 · I-16 WBS · I-17 成本 · I-18 供应商发票</text>
+
+  <!-- lane 2 -->
+  <rect x="24" y="346" width="1552" height="220" rx="12" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="44" y="376" class="lane">② 同步写（关键单据）</text>
+  <text x="248" y="376" class="tag">2s 超时 · 超时转 outbox · 用户看到“处理中”而不是失败</text>
+
+  <rect x="40" y="406" width="340" height="110" rx="8" class="box"/>
+  <text x="56" y="432" class="bt">服务函数（业务事务）</text>
+  <text x="56" y="454" class="bs">zod 校验 → 权限 → 业务规则</text>
+  <text x="56" y="474" class="bs">本地事务写业务表 + outbox</text>
+  <text x="56" y="498" class="bs">幂等键在提交瞬间生成</text>
+
+  <rect x="430" y="406" width="270" height="110" rx="8" class="box"/>
+  <text x="446" y="432" class="bt">outbox（Sending）</text>
+  <text x="446" y="454" class="bs">2s 同步尝试</text>
+  <text x="446" y="474" class="bs">超时 → 转异步继续</text>
+  <text x="446" y="498" class="bs">状态对用户可见</text>
+
+  <rect x="760" y="406" width="270" height="110" rx="8" class="box"/>
+  <text x="776" y="432" class="bt">API 网关</text>
+  <text x="776" y="454" class="bs">OData POST / BAPI</text>
+  <text x="776" y="474" class="bs">返回 sapKey 或消息号</text>
+  <text x="776" y="498" class="bs">4xx 不重试，5xx 重试</text>
+
+  <rect x="1100" y="406" width="460" height="110" rx="8" class="box"/>
+  <text x="1116" y="432" class="bt">SAP 事务对象</text>
+  <text x="1116" y="454" class="bs">销售订单（SD）· 采购申请（MM）</text>
+  <text x="1116" y="474" class="bs">报工确认（PP）</text>
+  <text x="1116" y="498" class="bs">返回业务单号，Carbon 写入映射表</text>
+
+  <line x1="380" y1="461" x2="426" y2="461" class="lnT" marker-end="url(#at)"/><text x="403" y="453" class="id" text-anchor="middle">写</text>
+  <line x1="700" y1="461" x2="756" y2="461" class="lnT" marker-end="url(#at)"/><text x="728" y="453" class="id" text-anchor="middle">发</text>
+  <line x1="1030" y1="461" x2="1096" y2="461" class="lnT" marker-end="url(#at)"/><text x="1063" y="453" class="id" text-anchor="middle">POST</text>
+  <text x="44" y="544" class="sm">接口：I-05 销售订单 · I-07 采购申请/订单 · I-10 报工确认</text>
+
+  <!-- lane 3 -->
+  <rect x="24" y="582" width="1552" height="220" rx="12" fill="#f4f6ff" stroke="#c7cff0"/>
+  <text x="44" y="612" class="lane">③ 异步批量（可延迟）</text>
+  <text x="248" y="612" class="tag">IDoc / 批量 · 夜间窗口 · 单批 ≤500 行 · 按行记录结果</text>
+
+  <rect x="40" y="642" width="340" height="110" rx="8" class="box"/>
+  <text x="56" y="668" class="bt">扫码队列 / 批量提交</text>
+  <text x="56" y="690" class="bs">收货 · 领退料 · 报废 · 开票申请</text>
+  <text x="56" y="710" class="bs">现场网络差也能先缓存</text>
+  <text x="56" y="734" class="bs">恢复后按序补传</text>
+
+  <rect x="430" y="642" width="270" height="110" rx="8" class="box"/>
+  <text x="446" y="668" class="bt">outbox + 死信</text>
+  <text x="446" y="690" class="bs">指数退避 1s→5min（≤10 次）</text>
+  <text x="446" y="710" class="bs">耗尽进 Dead，人工重放</text>
+  <text x="446" y="734" class="bs">同一幂等键可安全重放</text>
+
+  <rect x="760" y="642" width="270" height="110" rx="8" class="box"/>
+  <text x="776" y="668" class="bt">事件总线 / 批处理</text>
+  <text x="776" y="690" class="bs">IDoc 打包与状态跟踪</text>
+  <text x="776" y="710" class="bs">SAP 回执关联请求号</text>
+  <text x="776" y="734" class="bs">失败行单独重放</text>
+
+  <rect x="1100" y="642" width="460" height="110" rx="8" class="box"/>
+  <text x="1116" y="668" class="bt">SAP 过账对象</text>
+  <text x="1116" y="690" class="bs">物料凭证（收货 / 移动 / 报废）</text>
+  <text x="1116" y="710" class="bs">检验结果 · 开票申请</text>
+  <text x="1116" y="734" class="bs">过账后回写凭证号与数量</text>
+
+  <line x1="380" y1="697" x2="426" y2="697" class="lnB" marker-end="url(#ab)"/><text x="403" y="689" class="id" text-anchor="middle">批量</text>
+  <line x1="700" y1="697" x2="756" y2="697" class="lnB" marker-end="url(#ab)"/><text x="728" y="689" class="id" text-anchor="middle">出队</text>
+  <line x1="1030" y1="697" x2="1096" y2="697" class="lnB" marker-end="url(#ab)"/><text x="1063" y="689" class="id" text-anchor="middle">IDoc</text>
+  <text x="44" y="780" class="sm">接口：I-08 收货/库存移动 · I-12 检验结果 · I-15 开票申请</text>
+
+  <!-- bottom band -->
+  <rect x="24" y="824" width="1552" height="86" rx="10" fill="#ffffff" stroke="#dbe3ea" stroke-dasharray="5 4"/>
+  <text x="44" y="850" class="bt" style="font-size:14px">横切能力：对账 · 可观测 · 降级</text>
+  <text x="44" y="874" class="bs">日对账（Carbon 已提交 vs SAP 已存在，差异入 reconDiff）· correlationId 贯穿两侧日志 · 成功率 / P95 / 积压 / 死信四项看板</text>
+  <text x="44" y="896" class="bs">SAP 长时不可用（5 分钟失败率 &gt;50%）→ 前台降级为“只读 + 排队”，禁止新建跨系统单据并抬头提示</text>
+
+  <text x="40" y="952" class="sm">通道纪律：查询不得写 SAP；同步写不得批量；异步批量不得阻塞用户界面。任何“绕过网关直连”的方案在评审阶段直接驳回。</text>
+</svg>

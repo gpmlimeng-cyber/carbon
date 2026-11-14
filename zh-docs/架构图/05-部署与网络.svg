@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+    <style>
+      .h{fill:#111827;font-weight:700;font-size:24px}
+      .sub{fill:#6b7280;font-size:13px}
+      .bt{fill:#111827;font-weight:700;font-size:14px}
+      .bs{fill:#6b7280;font-size:11px}
+      .sm{fill:#6b7280;font-size:11.5px}
+      .zone{fill:#ffffff;stroke:#cbd5e1;stroke-dasharray:6 4;stroke-width:1.4}
+      .box{fill:#ffffff;stroke:#dbe3ea;stroke-width:1.2}
+      .ln{stroke:#94a3b8;stroke-width:1.5;fill:none}
+      .lnT{stroke:#0f6b5c;stroke-width:1.9;fill:none}
+      .lnB{stroke:#3b4ea0;stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+      .zt{fill:#111827;font-weight:700;font-size:14px}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="40" y="52" class="h">图 05 · 部署与网络分区</text>
+  <text x="40" y="78" class="sub">四区隔离：办公/车间 → Carbon 应用区 → DMZ 集成层 → SAP 核心区；跨区只走网关，不建第二条通路</text>
+
+  <!-- zone headers -->
+  <text x="40" y="118" class="zt">办公网 / 车间</text>
+  <text x="440" y="118" class="zt">Carbon 应用区（内网）</text>
+  <text x="936" y="118" class="zt">DMZ 集成层</text>
+  <text x="1236" y="118" class="zt">SAP 核心区</text>
+
+  <!-- band 1 -->
+  <rect x="24" y="132" width="356" height="640" rx="12" class="zone"/>
+  <rect x="44" y="170" width="316" height="92" rx="8" class="box"/>
+  <text x="60" y="196" class="bt">办公终端</text><text x="60" y="218" class="bs">ERP UI · 审批 · 报表</text><text x="60" y="240" class="bs">浏览器，无本地安装</text>
+  <rect x="44" y="282" width="316" height="92" rx="8" class="box"/>
+  <text x="60" y="308" class="bt">车间终端</text><text x="60" y="330" class="bs">MES · 扫码枪 · 触摸屏</text><text x="60" y="352" class="bs">可装 PWA；离线仅壳页，写入需联网</text>
+  <rect x="44" y="394" width="316" height="92" rx="8" class="box"/>
+  <text x="60" y="420" class="bt">打印代理</text><text x="60" y="442" class="bs">标签 / 装箱单 / ZPL</text><text x="60" y="464" class="bs">局域网内注册，不暴露公网</text>
+  <rect x="44" y="506" width="316" height="92" rx="8" class="box"/>
+  <text x="60" y="532" class="bt">移动端 / 门户</text><text x="60" y="554" class="bs">PWA · 客户与供应商自助</text><text x="60" y="576" class="bs">仅 HTTPS，最小权限</text>
+  <text x="44" y="640" class="bs">出口策略：仅允许访问应用区 443</text>
+  <text x="44" y="664" class="bs">不直接访问 SAP，不挂载共享盘</text>
+
+  <!-- band 2 -->
+  <rect x="420" y="132" width="452" height="640" rx="12" fill="#ecf7f4" stroke="#8dcdbf" stroke-width="1.4"/>
+  <rect x="440" y="170" width="412" height="76" rx="8" class="box"/>
+  <text x="456" y="196" class="bt">反向代理 / TLS 终止（×2）</text>
+  <text x="456" y="218" class="bs">Caddy / Nginx · 证书自动续期 · 会话亲和</text>
+  <rect x="440" y="264" width="412" height="76" rx="8" class="box"/>
+  <text x="456" y="290" class="bt">Carbon 应用服务（×2，无状态）</text>
+  <text x="456" y="312" class="bs">SSR · 服务函数 · outbox 调度 · 水平扩展</text>
+  <rect x="440" y="358" width="412" height="76" rx="8" class="box"/>
+  <text x="456" y="384" class="bt">PostgreSQL（主 / 备 + WAL 归档）</text>
+  <text x="456" y="406" class="bs">业务表 · RLS · 映射 · outbox · 血缘</text>
+  <rect x="440" y="452" width="412" height="76" rx="8" class="box"/>
+  <text x="456" y="478" class="bt">Redis（主从）</text>
+  <text x="456" y="500" class="bs">SAP 查询缓存 · 限流 · 锁 · 队列指标</text>
+  <rect x="440" y="546" width="412" height="76" rx="8" class="box"/>
+  <text x="456" y="572" class="bt">对象存储 + 只读副本</text>
+  <text x="456" y="594" class="bs">图纸 / 报告 / 照片 + BI 分析库</text>
+  <text x="456" y="636" class="bs">备份：全备日备 + WAL 连续归档</text>
+  <text x="456" y="660" class="bs">RPO ≤ 15min　RTO ≤ 4h（季度演练）</text>
+
+  <!-- band 3 -->
+  <rect x="912" y="132" width="272" height="640" rx="12" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.4"/>
+  <rect x="932" y="170" width="232" height="88" rx="8" class="box"/>
+  <text x="948" y="196" class="bt">API 网关（×2）</text>
+  <text x="948" y="218" class="bs">鉴权 · 限流 · 转换</text>
+  <text x="948" y="240" class="bs">重试 · 熔断</text>
+  <rect x="932" y="278" width="232" height="88" rx="8" class="box"/>
+  <text x="948" y="304" class="bt">事件总线</text>
+  <text x="948" y="326" class="bs">Business Events · IDoc</text>
+  <text x="948" y="348" class="bs">承接 SAP 事件，转发 Carbon</text>
+  <rect x="932" y="386" width="232" height="88" rx="8" class="box"/>
+  <text x="948" y="412" class="bt">密钥与证书</text>
+  <text x="948" y="434" class="bs">Vault · mTLS</text>
+  <text x="948" y="456" class="bs">90 天轮换</text>
+  <rect x="932" y="494" width="232" height="88" rx="8" class="box"/>
+  <text x="948" y="520" class="bt">监控与日志</text>
+  <text x="948" y="542" class="bs">成功率和 P95</text>
+  <text x="948" y="564" class="bs">积压 / 死信 / 告警</text>
+  <text x="944" y="640" class="bs">只进不出：所有跨区调用</text>
+  <text x="944" y="662" class="bs">在两个方向上都必须经此</text>
+
+  <!-- band 4 -->
+  <rect x="1204" y="132" width="372" height="640" rx="12" fill="#f4f6ff" stroke="#c7cff0" stroke-width="1.4"/>
+  <rect x="1224" y="170" width="332" height="88" rx="8" class="box"/>
+  <text x="1240" y="196" class="bt">SAP 应用服务器</text>
+  <text x="1240" y="218" class="bs">SD / MM / PP / QM / PS / CO / FI</text>
+  <text x="1240" y="240" class="bs">业务逻辑与授权在此执行</text>
+  <rect x="1224" y="278" width="332" height="88" rx="8" class="box"/>
+  <text x="1240" y="304" class="bt">HANA / 数据库（主备）</text>
+  <text x="1240" y="326" class="bs">库存 · 估值 · 凭证 · 序列号</text>
+  <text x="1240" y="348" class="bs">应用层无权直连</text>
+  <rect x="1224" y="386" width="332" height="88" rx="8" class="box"/>
+  <text x="1240" y="412" class="bt">SAP 网关（RFC / IDoc / OData）</text>
+  <text x="1240" y="434" class="bs">仅接受 DMZ 白名单来源（OData / IDoc）</text>
+  <text x="1240" y="456" class="bs">限流配额与 BASIS 约定；事件经 DMZ 回传</text>
+  <rect x="1224" y="494" width="332" height="88" rx="8" class="box"/>
+  <text x="1240" y="520" class="bt">备份与归档</text>
+  <text x="1240" y="542" class="bs">沿用既有策略，不因本项目变更</text>
+  <text x="1240" y="564" class="bs">接口层故障不影响 SAP 自身运行</text>
+  <text x="1236" y="640" class="bs">边界：Carbon 不得直连数据库</text>
+  <text x="1236" y="662" class="bs">SAP 不得回调 Carbon 私有接口</text>
+
+  <!-- arrows -->
+  <line x1="368" y1="440" x2="416" y2="440" class="ln" marker-end="url(#a)"/>
+  <text x="392" y="432" class="sm" text-anchor="middle">443</text>
+  <line x1="876" y1="470" x2="908" y2="470" class="lnT" marker-end="url(#at)"/>
+  <text x="892" y="462" class="sm" text-anchor="middle">8443</text>
+
+
+  <!-- bottom strip -->
+  <rect x="24" y="800" width="1552" height="104" rx="12" fill="#ffffff" stroke="#dbe3ea"/>
+  <text x="44" y="828" class="bt" style="font-size:14px">运行要求</text>
+  <text x="44" y="854" class="bs">最小规格：应用 4C8G ×2 ／ Postgres 8C16G + SSD 500G ／ Redis 2G ／ 网关 2C4G ×2</text>
+  <text x="44" y="876" class="bs">环境：dev / test / prod 三套；test 用脱敏数据，禁止直连生产；版本化发布，迁移前自动备份</text>
+  <text x="44" y="898" class="bs">值班必看：接口成功率、P95、outbox 积压、死信数；SAP 不可用时的降级开关是否生效</text>
+
+  <text x="40" y="948" class="sm">注：端口与协议随企业网络策略调整；上线前需与 BASIS / 网络组共同确认白名单、证书与限流配额，并写入 runbook。</text>
+</svg>

@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+    <style>
+      .h{fill:#111827;font-weight:700;font-size:24px}
+      .sub{fill:#6b7280;font-size:13px}
+      .bt{fill:#111827;font-weight:700;font-size:14px}
+      .bs{fill:#6b7280;font-size:11.5px}
+      .st{fill:#111827;font-weight:700;font-size:13px}
+      .sm{fill:#6b7280;font-size:11px}
+      .box{fill:#ffffff;stroke:#dbe3ea;stroke-width:1.2}
+      .state{fill:#ffffff;stroke:#94a3b8;stroke-width:1.4}
+      .ok{fill:#ecf7f4;stroke:#0f6b5c;stroke-width:1.6}
+      .bad{fill:#fff1f2;stroke:#fda4af;stroke-width:1.4}
+      .ln{stroke:#94a3b8;stroke-width:1.5;fill:none}
+      .lnT{stroke:#0f6b5c;stroke-width:1.8;fill:none}
+      .dash{stroke:#94a3b8;stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="40" y="52" class="h">图 04 · 写请求生命周期（outbox + 幂等 + 死信）</text>
+  <text x="40" y="78" class="sub">跨系统没有分布式事务：本地事务先落库，再由 outbox 把“请求”送到 SAP，任何失败都可见、可重放、可对账</text>
+
+  <!-- pipeline -->
+  <text x="40" y="122" class="bt" style="font-size:15px">一次写操作经过的六步</text>
+  <rect x="40" y="140" width="230" height="122" rx="8" class="box"/>
+  <text x="56" y="166" class="bt">① 用户提交</text>
+  <text x="56" y="190" class="bs">表单 / fetcher</text>
+  <text x="56" y="210" class="bs">前端只做基础校验</text>
+  <text x="56" y="234" class="bs">不直接调用 SAP</text>
+
+  <rect x="296" y="140" width="230" height="122" rx="8" class="box"/>
+  <text x="312" y="166" class="bt">② 本地事务</text>
+  <text x="312" y="190" class="bs">业务表 + outbox（Pending）</text>
+  <text x="312" y="210" class="bs">同一事务提交，要么都成</text>
+  <text x="312" y="234" class="bs">生成幂等键</text>
+
+  <rect x="552" y="140" width="230" height="122" rx="8" class="box"/>
+  <text x="568" y="166" class="bt">③ 调度发送</text>
+  <text x="568" y="190" class="bs">Pending → Sending</text>
+  <text x="568" y="210" class="bs">携带幂等键与契约报文</text>
+  <text x="568" y="234" class="bs">2s 同步预算</text>
+
+  <rect x="808" y="140" width="230" height="122" rx="8" class="box"/>
+  <text x="824" y="166" class="bt">④ 网关 → SAP</text>
+  <text x="824" y="190" class="bs">鉴权 · 限流 · 转换</text>
+  <text x="824" y="210" class="bs">OData POST / BAPI / IDoc</text>
+  <text x="824" y="234" class="bs">返回单据号或消息号</text>
+
+  <rect x="1064" y="140" width="230" height="122" rx="8" class="box"/>
+  <text x="1080" y="166" class="bt">⑤ 回写结果</text>
+  <text x="1080" y="190" class="bs">Synced + sapKey</text>
+  <text x="1080" y="210" class="bs">或 Failed + 原始消息号</text>
+  <text x="1080" y="234" class="bs">更新映射表与缓存</text>
+
+  <rect x="1320" y="140" width="230" height="122" rx="8" class="box"/>
+  <text x="1336" y="166" class="bt">⑥ UI 状态</text>
+  <text x="1336" y="190" class="bs">已同步 / 处理中 / 失败</text>
+  <text x="1336" y="210" class="bs">失败可点开看原因</text>
+  <text x="1336" y="234" class="bs">禁止伪装成功</text>
+
+  <line x1="270" y1="201" x2="292" y2="201" class="lnT" marker-end="url(#at)"/>
+  <line x1="526" y1="201" x2="548" y2="201" class="lnT" marker-end="url(#at)"/>
+  <line x1="782" y1="201" x2="804" y2="201" class="lnT" marker-end="url(#at)"/>
+  <line x1="1038" y1="201" x2="1060" y2="201" class="lnT" marker-end="url(#at)"/>
+  <line x1="1294" y1="201" x2="1316" y2="201" class="lnT" marker-end="url(#at)"/>
+
+  <!-- state machine -->
+  <rect x="24" y="292" width="772" height="322" rx="12" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="44" y="320" class="bt" style="font-size:15px">outbox 状态机</text>
+  <text x="44" y="340" class="sm">每个状态都可在界面与运维页查到；Dead 必须有责任人</text>
+
+  <rect x="60" y="372" width="130" height="58" rx="8" class="state"/>
+  <text x="125" y="398" class="st" text-anchor="middle">Pending</text>
+  <text x="125" y="418" class="sm" text-anchor="middle">已落库未发</text>
+
+  <rect x="244" y="372" width="130" height="58" rx="8" class="state"/>
+  <text x="309" y="398" class="st" text-anchor="middle">Sending</text>
+  <text x="309" y="418" class="sm" text-anchor="middle">已发出未确认</text>
+
+  <rect x="428" y="372" width="140" height="58" rx="8" class="ok"/>
+  <text x="498" y="398" class="st" text-anchor="middle">Synced</text>
+  <text x="498" y="418" class="sm" text-anchor="middle">已回写 sapKey</text>
+
+  <rect x="244" y="484" width="130" height="58" rx="8" class="state"/>
+  <text x="309" y="510" class="st" text-anchor="middle">Failed</text>
+  <text x="309" y="530" class="sm" text-anchor="middle">可重试</text>
+
+  <rect x="428" y="484" width="140" height="58" rx="8" class="bad"/>
+  <text x="498" y="510" class="st" text-anchor="middle">Dead</text>
+  <text x="498" y="530" class="sm" text-anchor="middle">需人工重放</text>
+
+  <line x1="190" y1="401" x2="240" y2="401" class="ln" marker-end="url(#a)"/>
+  <text x="215" y="392" class="sm" text-anchor="middle">发送</text>
+  <line x1="374" y1="401" x2="424" y2="401" class="ln" marker-end="url(#a)"/>
+  <text x="399" y="392" class="sm" text-anchor="middle">成功</text>
+  <path d="M309,430 L309,480" class="ln" marker-end="url(#a)"/>
+  <text x="318" y="460" class="sm">5xx/超时</text>
+  <path d="M226,513 L200,513 L200,401 L240,401" class="ln" marker-end="url(#a)"/>
+  <text x="194" y="460" class="sm" text-anchor="end">重试</text>
+  <path d="M374,513 L424,513" class="dash" marker-end="url(#a)"/>
+  <text x="399" y="504" class="sm" text-anchor="middle">超限</text>
+  <path d="M498,542 L498,576 L125,576 L125,434" class="dash" marker-end="url(#a)"/>
+  <text x="300" y="592" class="sm" text-anchor="middle">人工重放（同一幂等键）</text>
+
+  <text x="600" y="392" class="sm">重试策略</text>
+  <text x="600" y="414" class="bs">1s → 2s → 4s → … → 5min</text>
+  <text x="600" y="434" class="bs">最多 10 次，之后 Dead</text>
+  <text x="600" y="462" class="sm">4xx 不重试</text>
+  <text x="600" y="484" class="bs">业务拒绝直接 Failed</text>
+  <text x="600" y="504" class="bs">展示 SAP 消息号 + 中文解释</text>
+
+  <!-- failure matrix -->
+  <rect x="812" y="292" width="764" height="322" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="832" y="320" class="bt" style="font-size:15px">失败处理矩阵</text>
+  <line x1="832" y1="334" x2="1556" y2="334" stroke="#e5e7eb"/>
+  <g font-size="12">
+    <text x="832" y="356" class="sm">场景</text><text x="1010" y="356" class="sm">判定</text><text x="1170" y="356" class="sm">处理</text>
+    <line x1="832" y1="366" x2="1556" y2="366" stroke="#f1f5f9"/>
+    <text x="832" y="390" class="bs">业务拒绝</text><text x="1010" y="390" class="bs">4xx / 消息号 E</text><text x="1170" y="390" class="bs">不重试，Failed + 原因</text>
+    <text x="832" y="416" class="bs">超时 / 限流</text><text x="1010" y="416" class="bs">408 / 429 / 5xx</text><text x="1170" y="416" class="bs">指数退避，≤10 次</text>
+    <text x="832" y="442" class="bs">重复提交</text><text x="1010" y="442" class="bs">幂等键已存在</text><text x="1170" y="442" class="bs">返回既有 sapKey</text>
+    <text x="832" y="468" class="bs">SAP 不可用</text><text x="1010" y="468" class="bs">5 分钟失败率 &gt;50%</text><text x="1170" y="468" class="bs">降级只读 + 排队</text>
+    <text x="832" y="494" class="bs">批量部分成功</text><text x="1010" y="494" class="bs">按行回执</text><text x="1170" y="494" class="bs">失败行单独重放</text>
+    <text x="832" y="520" class="bs">映射缺失</text><text x="1010" y="520" class="bs">无 sapObjectMap</text><text x="1170" y="520" class="bs">拒绝发送，先建映射</text>
+  </g>
+  <text x="832" y="556" class="sm">原则：错误要么让用户看见，要么让运维看见；不允许“静默丢弃”。</text>
+  <text x="832" y="580" class="sm">所有跨系统调用携带 correlationId，两侧日志可按同一 ID 串联。</text>
+
+  <!-- reconciliation -->
+  <rect x="24" y="636" width="772" height="164" rx="12" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="44" y="664" class="bt" style="font-size:15px">对账（没有对账就没有集成）</text>
+  <text x="44" y="692" class="bs">① 日对账：按对象比对“Carbon 已提交”与“SAP 已存在”，差异写 reconDiff 并指派责任人</text>
+  <text x="44" y="716" class="bs">② 状态对账：SAP 状态变化必须回刷 Carbon（事件优先、15min 轮询兜底）</text>
+  <text x="44" y="740" class="bs">③ 金额对账：开票 / 收货金额与 SAP 凭证核对，月度财务签字，差异有台账</text>
+  <text x="44" y="772" class="bs">④ 差异闭环：每条差异有 owner、处理时限、根因分类（数据 / 接口 / 人为）</text>
+
+  <!-- monitoring -->
+  <rect x="812" y="636" width="764" height="164" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="832" y="664" class="bt" style="font-size:15px">监控四项（值班看板）</text>
+  <rect x="832" y="680" width="170" height="100" rx="8" class="box"/>
+  <text x="848" y="706" class="bs">接口成功率</text><text x="848" y="738" class="st" style="font-size:22px">≥ 99.5%</text><text x="848" y="762" class="sm">按对象分维度</text>
+  <rect x="1014" y="680" width="170" height="100" rx="8" class="box"/>
+  <text x="1030" y="706" class="bs">P95 耗时</text><text x="1030" y="738" class="st" style="font-size:22px">≤ 800ms</text><text x="1030" y="762" class="sm">查询路径</text>
+  <rect x="1196" y="680" width="170" height="100" rx="8" class="box"/>
+  <text x="1212" y="706" class="bs">outbox 积压</text><text x="1212" y="738" class="st" style="font-size:22px">&lt; 200</text><text x="1212" y="762" class="sm">超阈值告警</text>
+  <rect x="1378" y="680" width="178" height="100" rx="8" class="box"/>
+  <text x="1394" y="706" class="bs">死信数量</text><text x="1394" y="738" class="st" style="font-size:22px">每日清零</text><text x="1394" y="762" class="sm">有 owner 才允许挂账</text>
+
+  <text x="40" y="880" class="sm">设计要点：用户感知的“成功”是“本地已落库”，不是“SAP 已过账”；两者之间的差距由状态角标、对账和告警补齐。</text>
+  <text x="40" y="906" class="sm">反模式：把 SAP 调用放在数据库事务里（长事务 + 锁表）；失败后静默重试到天荒地老；UI 先显示成功再回头改状态。</text>
+</svg>

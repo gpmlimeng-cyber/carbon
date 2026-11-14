@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3b4ea0"/></marker>
+    <style>
+      .t{fill:#111827;font-weight:700}
+      .h{fill:#111827;font-weight:700;font-size:24px}
+      .sub{fill:#6b7280;font-size:13px}
+      .lab{fill:#374151;font-weight:700;font-size:14px}
+      .bt{fill:#111827;font-weight:700;font-size:15px}
+      .bs{fill:#6b7280;font-size:11.5px}
+      .li{fill:#0f6b5c;font-weight:700;font-size:13px}
+      .li2{fill:#3b4ea0;font-weight:700;font-size:13px}
+      .sm{fill:#94a3b8;font-size:10.5px}
+      .box{fill:#ffffff;stroke:#e5e7eb;stroke-width:1.2}
+      .panel{fill:#f8fafc;stroke:#e5e7eb;stroke-width:1.2}
+      .tealpanel{fill:#ecf7f4;stroke:#8dcdbf;stroke-width:1.2}
+      .bluepanel{fill:#f4f6ff;stroke:#c7cff0;stroke-width:1.2}
+      .dash{fill:#ffffff;stroke:#cbd5e1;stroke-dasharray:5 4;stroke-width:1.2}
+      .ln{stroke:#94a3b8;stroke-width:1.4;fill:none}
+      .lnT{stroke:#0f6b5c;stroke-width:2;fill:none}
+      .lnB{stroke:#3b4ea0;stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="40" y="52" class="h">图 01 · 总体架构</text>
+  <text x="40" y="78" class="sub">Carbon（SoE）+ SAP（SoR）· 四区分离 · 三条通道　|　每个单据只有一个状态机主人</text>
+
+  <g transform="translate(1180,38)">
+    <line x1="0" y1="8" x2="42" y2="8" stroke="#0f6b5c" stroke-width="2" marker-end="url(#at)"/><text x="50" y="12" class="sm">写请求（同步/异步）</text>
+    <line x1="230" y1="8" x2="272" y2="8" stroke="#3b4ea0" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#ab)"/><text x="280" y="12" class="sm">事件 / 状态回传</text>
+  </g>
+
+  <!-- L1 -->
+  <text x="150" y="145" class="lab" text-anchor="end">用户层</text>
+  <rect x="170" y="96" width="1390" height="90" rx="10" class="panel"/>
+  <rect x="190" y="112" width="325" height="58" rx="7" class="box"/>
+  <text x="206" y="136" class="bt">ERP UI</text><text x="206" y="156" class="bs">业务 · 计划 · 采购 · 财务（只读）</text>
+  <rect x="535" y="112" width="325" height="58" rx="7" class="box"/>
+  <text x="551" y="136" class="bt">MES 终端</text><text x="551" y="156" class="bs">触摸屏 · 扫码枪 · 标签打印</text>
+  <rect x="880" y="112" width="325" height="58" rx="7" class="box"/>
+  <text x="896" y="136" class="bt">客户 / 供应商门户</text><text x="896" y="156" class="bs">进度 · 工单 · 文档</text>
+  <rect x="1225" y="112" width="325" height="58" rx="7" class="box"/>
+  <text x="1241" y="136" class="bt">移动端 PWA</text><text x="1241" y="156" class="bs">审批 · 查询 · 拍照</text>
+
+  <line x1="700" y1="186" x2="700" y2="218" class="ln" marker-end="url(#a)"/>
+  <text x="690" y="208" class="sm" text-anchor="end">HTTPS</text>
+
+  <!-- L2 -->
+  <text x="150" y="262" class="lab" text-anchor="end">接入层</text>
+  <rect x="170" y="220" width="1390" height="74" rx="10" class="panel"/>
+  <rect x="190" y="234" width="440" height="46" rx="7" class="box"/>
+  <text x="206" y="262" class="bt" style="font-size:14px">TLS 终止 / 反向代理 <tspan class="bs">（Caddy / Nginx）</tspan></text>
+  <rect x="660" y="234" width="440" height="46" rx="7" class="box"/>
+  <text x="676" y="262" class="bt" style="font-size:14px">SSO 身份源 <tspan class="bs">（AD / Entra → SAML / OIDC）</tspan></text>
+  <rect x="1130" y="234" width="420" height="46" rx="7" class="box"/>
+  <text x="1146" y="262" class="bt" style="font-size:14px">WAF / 全局限流</text>
+
+  <line x1="700" y1="294" x2="700" y2="326" class="ln" marker-end="url(#a)"/>
+  <text x="690" y="316" class="sm" text-anchor="end">鉴权 · 会话</text>
+
+  <!-- L3 -->
+  <text x="150" y="470" class="lab" text-anchor="end">应用层</text>
+  <text x="150" y="490" class="sm" text-anchor="end">Carbon · 内网</text>
+  <rect x="170" y="328" width="1390" height="290" rx="10" class="tealpanel"/>
+  <text x="190" y="352" class="li">Carbon 应用区</text>
+  <text x="190" y="370" class="bs">业务界面 + 执行层：快、好用、可配置</text>
+
+  <rect x="186" y="382" width="440" height="100" rx="7" class="box"/>
+  <text x="202" y="406" class="bt">应用服务</text>
+  <text x="202" y="428" class="bs">React Router SSR · loader / action</text>
+  <text x="202" y="447" class="bs">defineServiceFn：zod + 权限 + 审计</text>
+  <text x="202" y="466" class="bs">错误分类 → HTTP 语义（402 / 409 / 422）</text>
+
+  <rect x="648" y="382" width="440" height="100" rx="7" class="box"/>
+  <text x="664" y="406" class="bt">领域模块</text>
+  <text x="664" y="428" class="bs">报价 / 方案配置 · 项目执行视图</text>
+  <text x="664" y="447" class="bs">工单报工 · 检验采集 · 售后派工</text>
+  <text x="664" y="466" class="bs">EBOM / 配置 · SN 装配血缘</text>
+
+  <rect x="1110" y="382" width="434" height="100" rx="7" class="box"/>
+  <text x="1126" y="406" class="bt">接口适配层</text>
+  <text x="1126" y="428" class="bs">outbox / 死信 · 幂等键</text>
+  <text x="1126" y="447" class="bs">sapObjectMap 双 ID 映射</text>
+  <text x="1126" y="466" class="bs">日对账 · 状态机回写</text>
+
+  <rect x="186" y="496" width="440" height="100" rx="7" class="box"/>
+  <text x="202" y="520" class="bt">PostgreSQL</text>
+  <text x="202" y="542" class="bs">RLS 权限 · 触发器 · 视图</text>
+  <text x="202" y="561" class="bs">业务表 · trackedGenealogy</text>
+  <text x="202" y="580" class="bs">sapOutbox · reconDiff</text>
+
+  <rect x="648" y="496" width="440" height="100" rx="7" class="box"/>
+  <text x="664" y="520" class="bt">Redis</text>
+  <text x="664" y="542" class="bs">SAP 查询缓存（TTL 30–60s）</text>
+  <text x="664" y="561" class="bs">限流 · 分布式锁</text>
+  <text x="664" y="580" class="bs">队列积压与健康度</text>
+
+  <rect x="1110" y="496" width="434" height="100" rx="7" class="box"/>
+  <text x="1126" y="520" class="bt">对象存储 / 只读副本</text>
+  <text x="1126" y="542" class="bs">图纸 · 检验报告 · 现场照片</text>
+  <text x="1126" y="561" class="bs">BI 只读副本（绕开 RLS）</text>
+  <text x="1126" y="580" class="bs">归档与备份</text>
+
+  <line x1="700" y1="618" x2="700" y2="650" class="lnT" marker-end="url(#at)"/>
+  <text x="690" y="640" class="sm" text-anchor="end">契约调用</text>
+
+  <!-- L4 -->
+  <text x="150" y="690" class="lab" text-anchor="end">集成层</text>
+  <text x="150" y="708" class="sm" text-anchor="end">DMZ</text>
+  <rect x="170" y="652" width="1390" height="74" rx="10" class="dash"/>
+  <rect x="186" y="666" width="440" height="46" rx="7" class="box"/>
+  <text x="202" y="694" class="bt" style="font-size:14px">API 网关 <tspan class="bs">限流 · 鉴权 · 转换 · 重试</tspan></text>
+  <rect x="648" y="666" width="440" height="46" rx="7" class="box"/>
+  <text x="664" y="694" class="bt" style="font-size:14px">事件总线 <tspan class="bs">Business Events / IDoc</tspan></text>
+  <rect x="1110" y="666" width="434" height="46" rx="7" class="box"/>
+  <text x="1126" y="694" class="bt" style="font-size:14px">契约与可观测 <tspan class="bs">correlationId · 指标</tspan></text>
+
+  <line x1="700" y1="726" x2="700" y2="758" class="lnT" marker-end="url(#at)"/>
+  <text x="690" y="748" class="sm" text-anchor="end">OData / IDoc</text>
+  <line x1="1180" y1="758" x2="1180" y2="726" class="lnB" marker-end="url(#ab)"/>
+  <text x="1192" y="748" class="sm">事件回传</text>
+
+  <!-- L5 -->
+  <text x="150" y="850" class="lab" text-anchor="end">核心层</text>
+  <text x="150" y="870" class="sm" text-anchor="end">SAP</text>
+  <rect x="170" y="760" width="1390" height="184" rx="10" class="bluepanel"/>
+  <text x="190" y="786" class="li2">SAP 核心区</text>
+  <text x="190" y="804" class="bs">系统记录（SoR）：主数据 · 订单 · 库存与估值 · 成本 · 发票</text>
+
+  <rect x="190" y="818" width="820" height="106" rx="7" class="box"/>
+  <text x="206" y="842" class="bt">S/4HANA 核心模块</text>
+  <g font-size="12.5" fill="#374151">
+    <rect x="206" y="854" width="118" height="30" rx="15" fill="#f1f5f9" stroke="#e2e8f0"/><text x="265" y="874" text-anchor="middle">SD 销售</text>
+    <rect x="334" y="854" width="118" height="30" rx="15" fill="#f1f5f9" stroke="#e2e8f0"/><text x="393" y="874" text-anchor="middle">MM 采购</text>
+    <rect x="462" y="854" width="118" height="30" rx="15" fill="#f1f5f9" stroke="#e2e8f0"/><text x="521" y="874" text-anchor="middle">PP 生产</text>
+    <rect x="590" y="854" width="118" height="30" rx="15" fill="#f1f5f9" stroke="#e2e8f0"/><text x="649" y="874" text-anchor="middle">QM 质量</text>
+    <rect x="718" y="854" width="118" height="30" rx="15" fill="#f1f5f9" stroke="#e2e8f0"/><text x="777" y="874" text-anchor="middle">PS 项目</text>
+    <rect x="846" y="854" width="148" height="30" rx="15" fill="#f1f5f9" stroke="#e2e8f0"/><text x="920" y="874" text-anchor="middle">CO / FI 成本与账</text>
+  </g>
+  <text x="206" y="906" class="bs">主数据 · 序列号登记 · 开票 · 合规</text>
+
+  <rect x="1030" y="818" width="514" height="106" rx="7" class="box"/>
+  <text x="1046" y="842" class="bt">接口层</text>
+  <text x="1046" y="864" class="bs">OData V2/V4（API_*_SRV）· RFC / BAPI · IDoc</text>
+  <text x="1046" y="884" class="bs">SAP Business Events / Event Mesh</text>
+  <text x="1046" y="906" class="bs" fill="#9f1239">禁止应用直连 SAP 数据库</text>
+
+  <text x="40" y="976" class="sm">Carbon（AGPL 核心 + EE 商业模块）承担 SoE；SAP 承担 SoR。跨区只走网关，状态单向回传，写操作全部带幂等键。</text>
+</svg>
