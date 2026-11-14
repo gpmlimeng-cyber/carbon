@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Carbon（前台）+ SAP（后台）集成方案 · 详细蓝图 v1.0</title>
+<style>
+  :root{
+    --ink:#111827; --ink-2:#374151; --muted:#6b7280; --line:#e5e7eb; --line-2:#d1d5db;
+    --bg:#ffffff; --panel:#f8fafc; --panel-2:#f1f5f9;
+    --accent:#0f6b5c; --accent-2:#0b5449; --accent-soft:#ecf7f4;
+    --warn:#92400e; --warn-soft:#fffbeb; --warn-line:#fcd34d;
+    --danger:#9f1239; --danger-soft:#fff1f2;
+    --r:10px; --r-sm:6px;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:15.5px; line-height:1.78;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- layout ---------- */
+  .shell{display:grid; grid-template-columns:264px minmax(0,1fr); gap:0}
+  nav.toc{
+    position:sticky; top:0; height:100vh; overflow:auto;
+    border-right:1px solid var(--line); background:var(--panel);
+    padding:28px 18px 40px;
+  }
+  nav.toc .brand{font-weight:700; font-size:14px; letter-spacing:.02em; color:var(--accent-2); margin-bottom:4px}
+  nav.toc .brand small{display:block; font-weight:500; color:var(--muted); font-size:12px; letter-spacing:0; margin-top:2px}
+  nav.toc ol{list-style:none; margin:18px 0 0; padding:0; counter-reset:toc}
+  nav.toc li{margin:0}
+  nav.toc a{
+    display:block; padding:6px 10px; margin:1px 0; border-radius:var(--r-sm);
+    color:var(--ink-2); text-decoration:none; font-size:13.5px; line-height:1.5;
+    border-left:2px solid transparent;
+  }
+  nav.toc a:hover{background:#eef2f5; color:var(--ink)}
+  nav.toc a.active{background:var(--accent-soft); color:var(--accent-2); border-left-color:var(--accent); font-weight:600}
+  nav.toc .toc-foot{margin-top:22px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); line-height:1.6}
+  main{padding:56px 56px 120px; max-width:1120px}
+
+  /* ---------- cover ---------- */
+  .cover{border-bottom:1px solid var(--line); padding-bottom:36px; margin-bottom:36px}
+  .cover .kicker{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700}
+  .cover h1{font-size:38px; line-height:1.25; margin:14px 0 10px; letter-spacing:-.01em; font-weight:800}
+  .cover .sub{font-size:17px; color:var(--ink-2); margin:0 0 22px; max-width:780px}
+  .meta{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-top:26px}
+  .meta div{background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:12px 14px}
+  .meta dt{font-size:11.5px; letter-spacing:.06em; color:var(--muted); text-transform:uppercase; margin:0 0 3px}
+  .meta dd{margin:0; font-size:13.5px; color:var(--ink); font-weight:600}
+
+  /* ---------- typography ---------- */
+  h2{font-size:25px; margin:64px 0 6px; letter-spacing:-.01em; font-weight:800; scroll-margin-top:20px}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:10px; font-size:20px}
+  h3{font-size:18px; margin:32px 0 8px; font-weight:700; scroll-margin-top:20px}
+  h4{font-size:15.5px; margin:22px 0 6px; font-weight:700; color:var(--ink)}
+  p{margin:10px 0}
+  .lede{color:var(--ink-2); font-size:16px; max-width:820px}
+  ul,ol{padding-left:22px; margin:10px 0}
+  li{margin:5px 0}
+  strong{font-weight:700}
+  code{font-family:var(--mono); font-size:.88em; background:var(--panel-2); padding:1.5px 5px; border-radius:4px; color:#0b3b34}
+  pre{background:#0f172a; color:#e2e8f0; padding:16px 18px; border-radius:var(--r); overflow:auto; font-size:13px; line-height:1.65}
+  pre code{background:none; color:inherit; padding:0; font-size:inherit}
+  a{color:var(--accent-2)}
+  .hr{height:1px; background:var(--line); margin:44px 0}
+
+  /* ---------- callouts ---------- */
+  .callout{border:1px solid var(--line); border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:var(--r-sm); padding:14px 18px; margin:18px 0}
+  .callout .t{font-weight:700; font-size:13.5px; color:var(--accent-2); margin-bottom:4px; letter-spacing:.02em}
+  .callout.warn{border-left-color:var(--warn-line); background:var(--warn-soft)}
+  .callout.warn .t{color:var(--warn)}
+  .callout.danger{border-left-color:#fda4af; background:var(--danger-soft)}
+  .callout.danger .t{color:var(--danger)}
+  .callout p:last-child{margin-bottom:0}
+
+  /* ---------- tables ---------- */
+  .tw{overflow:auto; margin:16px 0; border:1px solid var(--line); border-radius:var(--r)}
+  table{border-collapse:collapse; width:100%; font-size:13.6px; background:#fff}
+  caption{caption-side:top; text-align:left; font-size:12.5px; color:var(--muted); padding:10px 14px 8px; border-bottom:1px solid var(--line); background:var(--panel)}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  thead th{background:var(--panel-2); font-size:12.5px; letter-spacing:.02em; color:var(--ink-2); font-weight:700; white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:#fcfcfd}
+  td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+  .tag{display:inline-block; font-size:11.5px; line-height:1.5; padding:1px 7px; border-radius:999px; border:1px solid var(--line-2); color:var(--ink-2); background:#fff; white-space:nowrap}
+  .tag.ok{border-color:#a7ded2; background:#effaf6; color:#0b5449}
+  .tag.mid{border-color:#fcd34d; background:#fffbeb; color:#92400e}
+  .tag.no{border-color:#fda4af; background:#fff1f2; color:#9f1239}
+  .tag.gray{background:var(--panel-2); color:var(--muted)}
+
+  /* ---------- diagrams ---------- */
+  figure{margin:22px 0; border:1px solid var(--line); border-radius:var(--r); background:var(--panel); padding:20px 18px 14px}
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{font-size:12.5px; color:var(--muted); margin-top:12px; padding-top:10px; border-top:1px dashed var(--line-2)}
+  .svg-label{font:600 12.5px var(--sans); fill:var(--ink)}
+  .svg-sub{font:500 11px var(--sans); fill:var(--muted)}
+  .svg-mono{font:500 11px var(--mono); fill:#0b5449}
+  .svg-box{fill:#fff; stroke:var(--line-2)}
+  .svg-box-accent{fill:#ecf7f4; stroke:#8dcdbf}
+  .svg-box-sap{fill:#f4f6ff; stroke:#c7cff0}
+  .svg-arrow{stroke:#94a3b8; stroke-width:1.4; fill:none; marker-end:url(#arrow)}
+  .svg-arrow-strong{stroke:var(--accent); stroke-width:1.8; fill:none; marker-end:url(#arrowAccent)}
+
+  /* ---------- step flow ---------- */
+  .flow{display:grid; gap:10px; margin:16px 0}
+  .flow .step{display:grid; grid-template-columns:34px minmax(0,1fr); gap:12px; align-items:start; background:#fff; border:1px solid var(--line); border-radius:var(--r-sm); padding:11px 14px}
+  .flow .step .n{width:26px; height:26px; border-radius:50%; background:var(--accent-soft); color:var(--accent-2); font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center}
+  .flow .step .b strong{display:block; font-size:14px}
+  .flow .step .b span{font-size:13px; color:var(--muted)}
+  .flow .step code{font-size:12px}
+
+  /* ---------- cards / KPI ---------- */
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px; margin:18px 0}
+  .kpi{border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; background:#fff}
+  .kpi .v{font-size:26px; font-weight:800; letter-spacing:-.02em; color:var(--accent-2); font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:12.5px; color:var(--muted); margin-top:2px}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:18px 0}
+  .card{border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; background:#fff}
+  .card h4{margin:0 0 6px}
+  .card p{margin:0; font-size:13.5px; color:var(--ink-2)}
+  .adr{border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--r-sm); padding:14px 16px; margin:12px 0; background:#fff}
+  .adr .id{font-size:11.5px; font-weight:700; color:var(--accent); letter-spacing:.06em}
+  .adr .q{font-weight:700; margin:2px 0 6px}
+  .adr dl{display:grid; grid-template-columns:76px minmax(0,1fr); gap:2px 10px; margin:0; font-size:13.4px}
+  .adr dt{color:var(--muted); font-size:12.5px}
+  .adr dd{margin:0}
+
+  /* ---------- misc ---------- */
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .small{font-size:13px; color:var(--muted)}
+  .sign{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px}
+  .sign div{border:1px solid var(--line); border-radius:var(--r-sm); padding:16px; min-height:92px; font-size:13px; color:var(--muted)}
+  footer.doc-foot{margin-top:80px; padding-top:22px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap}
+
+  @media (max-width:1040px){
+    .shell{grid-template-columns:1fr}
+    nav.toc{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:18px}
+    nav.toc ol{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:2px}
+    main{padding:32px 22px 80px}
+    .cover h1{font-size:29px}
+    .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .two-col{grid-template-columns:1fr}
+  }
+
+  @media print{
+    @page{size:A4; margin:16mm 14mm}
+    body{font-size:10.5pt; line-height:1.62}
+    .shell{display:block}
+    nav.toc{display:none}
+    main{padding:0; max-width:none}
+    .cover{padding-bottom:14px; margin-bottom:18px}
+    .cover h1{font-size:24pt}
+    h2{font-size:15pt; margin-top:22pt; page-break-after:avoid}
+    h3{font-size:12pt; page-break-after:avoid}
+    figure,table,.callout,.adr,.flow .step{page-break-inside:avoid}
+    .tw{overflow:visible}
+    pre{background:#f8fafc; color:#111827; border:1px solid #d1d5db}
+    a{color:inherit; text-decoration:none}
+    .hr{display:none}
+    footer.doc-foot{page-break-before:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="toc" aria-label="目录">
+  <div class="brand">SAP 集成版蓝图<small>Carbon 前台 · SAP 后台 · v1.0</small></div>
+  <ol>
+    <li><a href="#s1">1 执行摘要</a></li>
+    <li><a href="#s2">2 现状与目标</a></li>
+    <li><a href="#s3">3 架构原则与铁律</a></li>
+    <li><a href="#s4">4 系统边界与职责矩阵</a></li>
+    <li><a href="#s5">5 集成架构</a></li>
+    <li><a href="#s6">6 接口清单</a></li>
+    <li><a href="#s7">7 主数据与 ID 治理</a></li>
+    <li><a href="#s8">8 一致性与事务</a></li>
+    <li><a href="#s9">9 关键场景时序</a></li>
+    <li><a href="#s10">10 追溯与质量</a></li>
+    <li><a href="#s11">11 安全与审计</a></li>
+    <li><a href="#s12">12 部署与容量</a></li>
+    <li><a href="#s13">13 实施路线与工作量</a></li>
+    <li><a href="#s14">14 风险与反模式</a></li>
+    <li><a href="#s15">15 架构决策记录</a></li>
+    <li><a href="#s16">16 附录</a></li>
+  </ol>
+  <div class="toc-foot">
+    建议 A4 打印或导出 PDF 评审。<br />
+    依赖：SAP S/4HANA API-first；<br />ECC 差异见 §12.4。
+  </div>
+</nav>
+
+<main>
+
+<!-- ============ COVER ============ -->
+<header class="cover" id="top">
+  <div class="kicker">Solution Blueprint · Manufacturing × SAP</div>
+  <h1>Carbon（前台）+ SAP（后台）<br />系统集成详细方案</h1>
+  <p class="sub">
+    面向“系统集成 + 按项目交付”型储能企业的双系统蓝图：Carbon 承担业务界面与执行层（SoE），
+    SAP 承担核心业务逻辑与账（SoR），两者通过契约化接口集成——每个单据只有一个状态机主人。
+  </p>
+  <dl class="meta">
+    <div><dt>版本</dt><dd>v1.0</dd></div>
+    <div><dt>日期</dt><dd>2026-11-14</dd></div>
+    <div><dt>适用</dt><dd>工商储能系统集成</dd></div>
+    <div><dt>状态</dt><dd>待评审</dd></div>
+  </dl>
+</header>
+
+<!-- ============ 1 ============ -->
+<h2 id="s1"><span class="num">01</span>执行摘要</h2>
+<p class="lede">
+  这套方案不是“两套 ERP 并联”，而是一次明确的职责切分：<strong>SAP 是账，Carbon 是手和眼</strong>。
+  前台把报价、配置、车间、质量、售后做得好用；后台把订单、库存、成本、发票管得准确。中间的接口层
+  负责“让两边说的是同一件事”。
+</p>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">18</div><div class="l">标准化接口（含 9 条写接口）</div></div>
+  <div class="kpi"><div class="v">4</div><div class="l">期实施，36 周上线</div></div>
+  <div class="kpi"><div class="v">32–40</div><div class="l">人月（含 SAP 侧配合）</div></div>
+  <div class="kpi"><div class="v">≤2s</div><div class="l">前台写操作返回上限</div></div>
+</div>
+
+<h3>结论</h3>
+<ul>
+  <li><strong>可行性高</strong>：Carbon 已有 <code>/api/v1</code>（OpenAPI）、出站 Webhook、19 条入站 Webhook、工作流引擎与集成连接表，做“前台 + 集成”不需要改核心。</li>
+  <li><strong>风险集中在边界</strong>：真正会失败的不是技术，而是“谁改状态、谁算成本、谁建生产订单”没定死。</li>
+  <li><strong>投入结构</strong>：Carbon 二开 14 人月、集成层 10 人月、SAP 侧 6–10 人月、双跑测试 6 人月。</li>
+</ul>
+
+<h3>三个必须本周定掉的决策</h3>
+<div class="cards">
+  <div class="card">
+    <h4>① 生产订单归属</h4>
+    <p>SAP 建单、Carbon 执行并回传确认（推荐）；反过来则要重写 SAP 的 PP 集成，成本翻倍。</p>
+  </div>
+  <div class="card">
+    <h4>② 工程 BOM 归属</h4>
+    <p>Carbon 拥有 EBOM 与项目配置，SAP 拥有 MBOM/工艺路线；通过“发布”单向同步。</p>
+  </div>
+  <div class="card">
+    <h4>③ 序列号粒度</h4>
+    <p>SAP 管到设备级（柜/簇），电芯级血缘放 Carbon；否则 SAP SER 表会被电芯撑爆。</p>
+  </div>
+</div>
+
+<!-- ============ 2 ============ -->
+<h2 id="s2"><span class="num">02</span>现状与目标</h2>
+<p class="lede">典型现状：SAP 把账管住了，但业务侧“用不动”——于是项目执行散落在 Excel、微信群和纸质单据里。目标不是替换 SAP，而是把业务侧的执行数据收回来。</p>
+
+<div class="tw">
+<table>
+  <caption>表 2-1　现状痛点与目标状态</caption>
+  <thead>
+    <tr><th style="width:16%">环节</th><th style="width:38%">现状（As-Is）</th><th style="width:46%">目标（To-Be）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>报价与选型</td><td>Excel 报价表 + CAD 图，配置靠资深工程师，报价口径不一</td><td>Carbon 报价单 + 配置模板，生成 EBOM 与成本估算，报价版本可追溯</td></tr>
+    <tr><td>项目执行</td><td>项目进度在甘特文件，变更靠邮件，现场与工厂信息不同步</td><td>项目视图实时展示（数据来自 SAP PS），执行反馈从 Carbon 回传</td></tr>
+    <tr><td>长交期采购</td><td>电芯/PCS 交期靠人跟，齐套靠开会</td><td>SAP 采购订单 + 到货预测，Carbon 提供齐套检查与缺料预警</td></tr>
+    <tr><td>车间执行</td><td>纸质派工单，报工回办公室补录，工时不准</td><td>MES 终端扫码开工/报工，工单状态实时，余料退料当场处理</td></tr>
+    <tr><td>质量与追溯</td><td>EOL 报告是 PDF，追溯靠翻纸质记录，召回无法定位</td><td>检验计划 + 测量值入库，SN 多级血缘，任取一台柜 5 分钟定位</td></tr>
+    <tr><td>发运与开票</td><td>发运靠邮件通知，开票等财务手工核对</td><td>SAP 交货单驱动发运，里程碑触发开票申请，状态双向可见</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>2.1 三条链共用一套主数据</h3>
+<figure>
+<svg viewBox="0 0 980 250" role="img" aria-label="三条业务链共用主数据与 SN 血缘">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8" />
+    </marker>
+  </defs>
+  <rect x="10" y="14" width="960" height="48" rx="8" class="svg-box-accent"/>
+  <text x="28" y="44" class="svg-label">共用底座：物料 · 客户 · 供应商 · 工厂/库位 · SN/批次 · 单位与币种</text>
+
+  <rect x="10" y="86" width="300" height="70" rx="8" class="svg-box"/>
+  <text x="26" y="112" class="svg-label">项目交付链</text>
+  <text x="26" y="134" class="svg-sub">商机 → 合同 → 里程碑 → 验收</text>
+
+  <rect x="340" y="86" width="300" height="70" rx="8" class="svg-box"/>
+  <text x="356" y="112" class="svg-label">制造链</text>
+  <text x="356" y="134" class="svg-sub">配置 → BOM → 工单 → 检验 → 发运</text>
+
+  <rect x="670" y="86" width="300" height="70" rx="8" class="svg-box"/>
+  <text x="686" y="112" class="svg-label">售后链</text>
+  <text x="686" y="134" class="svg-sub">装机 → 质保 → 派工 → 备件</text>
+
+  <path d="M160,62 L160,84" class="svg-arrow"/>
+  <path d="M490,62 L490,84" class="svg-arrow"/>
+  <path d="M820,62 L820,84" class="svg-arrow"/>
+
+  <rect x="10" y="186" width="960" height="48" rx="8" class="svg-box-sap"/>
+  <text x="28" y="216" class="svg-label">共用事实：一个 SN 走完三条链 —— 生产时建血缘，交付时绑站点，质保时用它索赔</text>
+</svg>
+<figcaption>图 2-1　三条链不是三套系统，共用一套主数据与一套 SN 血缘；这是双系统集成的第一约束。</figcaption>
+</figure>
+
+<!-- ============ 3 ============ -->
+<h2 id="s3"><span class="num">03</span>架构原则与铁律</h2>
+<p class="lede">原则不是口号，是评审时用来驳回设计的依据。以下四条铁律，违反任何一条，集成的长期成本都会超过重做。</p>
+
+<div class="callout danger">
+  <div class="t">铁律 1 · 单一状态机</div>
+  <p>同一业务对象（销售订单 / 采购订单 / 生产订单 / 库存 / 发票）只有一方能改状态，另一方只读镜像并展示来源。Carbon 侧的状态字段由接口写入，界面不可直接编辑。</p>
+</div>
+<div class="callout danger">
+  <div class="t">铁律 2 · 单一账本</div>
+  <p>库存数量与金额只存在于 SAP。Carbon 不计库存账、不做成本结转、不出财务凭证；所有库存变动都是“向 SAP 提交的移动请求”。</p>
+</div>
+<div class="callout">
+  <div class="t">铁律 3 · 单一主数据源</div>
+  <p>物料、客户、供应商、工厂、库位、工作中心以 SAP 为准，Carbon 只读并建本地索引；Carbon 需要新物料时走“主数据申请单”，由接口在 SAP 创建后回传编号。</p>
+</div>
+<div class="callout">
+  <div class="t">铁律 4 · 写操作必带幂等键，失败必进死信</div>
+  <p>Carbon 的每一次跨系统写都必须携带业务幂等键（类型 + 单据 + 版本），失败进入死信队列并可人工重放；禁止“无限重试”和“静默吞错”。</p>
+</div>
+
+<h3>六条设计原则</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">原则</th><th>含义</th><th style="width:26%">落地约束</th></tr></thead>
+  <tbody>
+    <tr><td>查缓存、写排队</td><td>读走缓存 + 短 TTL；写走 outbox，前台不阻塞在 SAP 上</td><td>查询 800ms 超时；写 2s 超时转异步</td></tr>
+    <tr><td>契约先行</td><td>接口先有 OpenAPI/IDoc 契约与样例报文，再写代码</td><td>契约仓库 + 契约测试进 CI</td></tr>
+    <tr><td>一字段一主人</td><td>每个字段只有一个系统可写，另一侧只读</td><td>字段级 owner 清单（见 §4.2）</td></tr>
+    <tr><td>可观测</td><td>每个跨系统操作有 correlationId、耗时、结果</td><td>两侧日志可按同一 ID 串联</td></tr>
+    <tr><td>可降级</td><td>SAP 不可用时前台进入只读 + 排队，而不是白屏</td><td>降级开关 + 横幅提示 + 队列积压告警</td></tr>
+    <tr><td>可对账</td><td>没有对账的集成等于没有集成</td><td>日对账 + 差异表 + 责任人</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 4 ============ -->
+<h2 id="s4"><span class="num">04</span>系统边界与职责矩阵</h2>
+<p class="lede">这是本方案最重要的一页。边界不清，后面所有接口都会变成扯皮现场。</p>
+
+<figure>
+<svg viewBox="0 0 980 330" role="img" aria-label="SoE 与 SoR 的职责边界">
+  <defs>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c" />
+    </marker>
+  </defs>
+  <rect x="8" y="8" width="540" height="284" rx="10" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="26" y="36" class="svg-label" style="font-size:14px">Carbon · SoE（Engagement）</text>
+  <text x="26" y="57" class="svg-sub">面向业务的界面与执行层：快、好用、可配置</text>
+
+  <rect x="26" y="74" width="250" height="52" rx="7" class="svg-box"/>
+  <text x="40" y="96" class="svg-label">报价 / 方案配置</text>
+  <text x="40" y="114" class="svg-sub">配置模板 · EBOM · 版本</text>
+
+  <rect x="292" y="74" width="250" height="52" rx="7" class="svg-box"/>
+  <text x="306" y="96" class="svg-label">车间执行</text>
+  <text x="306" y="114" class="svg-sub">执行单 · 报工 · 扫码</text>
+
+  <rect x="26" y="140" width="250" height="52" rx="7" class="svg-box"/>
+  <text x="40" y="162" class="svg-label">质量采集</text>
+  <text x="40" y="180" class="svg-sub">检验测量 · NCR · EOL</text>
+
+  <rect x="292" y="140" width="250" height="52" rx="7" class="svg-box"/>
+  <text x="306" y="162" class="svg-label">SN 血缘</text>
+  <text x="306" y="180" class="svg-sub">装配关系 · 追溯查询</text>
+
+  <rect x="26" y="206" width="250" height="52" rx="7" class="svg-box"/>
+  <text x="40" y="228" class="svg-label">售后 / 质保</text>
+  <text x="40" y="246" class="svg-sub">装机台账 · 派工 · 备件</text>
+
+  <rect x="292" y="206" width="250" height="52" rx="7" class="svg-box"/>
+  <text x="306" y="228" class="svg-label">客户/供应商门户</text>
+  <text x="306" y="246" class="svg-sub">进度 · 工单 · 文档</text>
+
+  <rect x="608" y="8" width="364" height="284" rx="10" fill="#f4f6ff" stroke="#c7cff0"/>
+  <text x="626" y="36" class="svg-label" style="font-size:14px">SAP · SoR（Record）</text>
+  <text x="626" y="57" class="svg-sub">核心业务逻辑与账：准、可审计、合规</text>
+
+  <rect x="626" y="74" width="150" height="52" rx="7" class="svg-box"/>
+  <text x="640" y="96" class="svg-label">主数据</text>
+  <text x="640" y="114" class="svg-sub">物料 / BP / 工厂</text>
+
+  <rect x="790" y="74" width="164" height="52" rx="7" class="svg-box"/>
+  <text x="804" y="96" class="svg-label">订单</text>
+  <text x="804" y="114" class="svg-sub">SD / MM / PP</text>
+
+  <rect x="626" y="140" width="150" height="52" rx="7" class="svg-box"/>
+  <text x="640" y="162" class="svg-label">库存与估值</text>
+  <text x="640" y="180" class="svg-sub">数量 · 金额 · 批次</text>
+
+  <rect x="790" y="140" width="164" height="52" rx="7" class="svg-box"/>
+  <text x="804" y="162" class="svg-label">成本与总账</text>
+  <text x="804" y="180" class="svg-sub">CO / FI · WBS</text>
+
+  <rect x="626" y="206" width="328" height="52" rx="7" class="svg-box"/>
+  <text x="640" y="228" class="svg-label">开票 / 合规 / 序列号登记</text>
+  <text x="640" y="246" class="svg-sub">发票 · 税务 · SER 主数据</text>
+
+  <path d="M552,150 L602,150" class="svg-arrow-strong"/>
+  <path d="M602,225 L554,225" class="svg-arrow"/>
+  <text x="8" y="316" class="svg-sub">→ 写请求（Carbon 发起，需 SAP 授权与幂等）　　← 状态 / 主数据回传（SAP 发起，事件优先、轮询兜底）</text>
+</svg>
+<figcaption>图 4-1　前台做“执行与体验”，后台做“账与合规”；中间是契约化接口，不是直接共享数据库。</figcaption>
+</figure>
+
+<h3>4.1 职责矩阵</h3>
+<div class="tw">
+<table>
+  <caption>表 4-1　业务对象的状态与数据归属（S = SAP，C = Carbon，S→C / C→S 为单向同步）</caption>
+  <thead>
+    <tr><th style="width:22%">业务对象</th><th style="width:8%">状态主人</th><th style="width:8%">数据主人</th><th style="width:30%">Carbon 的角色</th><th>集成方向</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>物料主数据（含工厂视图）</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>只读 + 搜索 + 本地索引</td><td>S→C（增量）</td></tr>
+    <tr><td>客户 / 供应商</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>只读 + 快捷建档申请</td><td>S→C；申请 C→S</td></tr>
+    <tr><td>工程 BOM / 项目配置</td><td><span class="tag ok">C</span></td><td><span class="tag ok">C</span></td><td>拥有、版本化、发布</td><td>C→S（发布 MBOM/组件）</td></tr>
+    <tr><td>工艺路线 / 生产版本</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>只读展示</td><td>S→C</td></tr>
+    <tr><td>报价 / 方案</td><td><span class="tag ok">C</span></td><td><span class="tag ok">C</span></td><td>拥有</td><td>结果 C→S（销售订单）</td></tr>
+    <tr><td>销售订单</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>创建/变更请求、状态镜像</td><td>C→S；状态 S→C</td></tr>
+    <tr><td>项目 / WBS / 里程碑</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>展示 + 执行进度反馈</td><td>S→C；进度 C→S</td></tr>
+    <tr><td>采购申请 / 采购订单</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>申请与跟单视图</td><td>C→S；状态回传</td></tr>
+    <tr><td>收货 / 库存移动</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>发起移动请求（带单据与 SN）</td><td>C→S（同步/异步）</td></tr>
+    <tr><td>库存余额 / 库龄 / 估值</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>只读（缓存 30–60s）</td><td>S→C</td></tr>
+    <tr><td>生产订单</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>执行单（工序级作业）</td><td>S→C；确认 C→S</td></tr>
+    <tr><td>报工 / 工时 / 废品</td><td><span class="tag mid">C 采集 → S 过账</span></td><td>明细 C / 汇总 S</td><td>采集与回传</td><td>C→S（confirmation）</td></tr>
+    <tr><td>检验批 / 检验结果</td><td><span class="tag mid">S 建批 / C 采集</span></td><td>结果 C / 判定 S</td><td>采集测量值并上传</td><td>S→C；结果 C→S</td></tr>
+    <tr><td>SN / 批次主数据</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>只读 + 打码</td><td>S→C</td></tr>
+    <tr><td>SN 装配血缘（父子）</td><td><span class="tag ok">C</span></td><td><span class="tag ok">C</span></td><td>拥有</td><td>供追溯；关键节点回传 S</td></tr>
+    <tr><td>不合格品 / NCR</td><td><span class="tag mid">C 流程 / S 处置</span></td><td>分摊</td><td>拥有处置流程</td><td>C→S（报废/退库移动）</td></tr>
+    <tr><td>发运 / 交货单</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>装箱与标签执行</td><td>C→S（包装信息）；S→C（交货单）</td></tr>
+    <tr><td>发票 / 应收应付</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>开票申请 + 状态展示</td><td>C→S；S→C</td></tr>
+    <tr><td>成本 / 总账</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>只读展示（项目毛利取 SAP）</td><td>S→C（汇总）</td></tr>
+    <tr><td>质保 / 装机台账 / 现场服务</td><td><span class="tag ok">C</span></td><td><span class="tag ok">C</span></td><td>拥有</td><td>服务成本回传 S</td></tr>
+    <tr><td>业务授权（信用/审批/释放）</td><td><span class="tag gray">S</span></td><td><span class="tag gray">S</span></td><td>UI 角色，交集生效</td><td>SSO + 角色映射</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>4.2 字段级 owner（示例，落地时补全）</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:16%">对象</th><th style="width:28%">SAP 独占写</th><th style="width:28%">Carbon 独占写</th><th>只读镜像</th></tr></thead>
+  <tbody>
+    <tr><td>销售订单</td><td>单号、状态、价格、信用、交期承诺</td><td>业务备注、附件、客户沟通记录</td><td>行项目数量（以 SAP 为准）</td></tr>
+    <tr><td>生产订单</td><td>订单号、组件需求、工序顺序、计划日期</td><td>实际开工/完工时间、报工明细、SN</td><td>已确认数量、废品数量（回传后）</td></tr>
+    <tr><td>物料</td><td>编码、描述、单位、工厂视图、评估类</td><td>图片、工艺说明、内部标签模板</td><td>全部业务字段</td></tr>
+    <tr><td>检验</td><td>检验批号、特性上下限、使用决策</td><td>实测值、测量设备、照片</td><td>批状态</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 5 ============ -->
+<h2 id="s5"><span class="num">05</span>集成架构</h2>
+<p class="lede">三条通道各司其职：查走缓存、关键写走同步、批量写走异步。任何一条通道被滥用，都会在半年内变成性能或一致性事故。</p>
+
+<figure>
+<svg viewBox="0 0 980 360" role="img" aria-label="集成架构分区图">
+  <rect x="8" y="8" width="964" height="70" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="24" y="34" class="svg-label">用户层</text>
+  <text x="24" y="56" class="svg-sub">业务 / 计划 / 采购 / 车间 / 客户与供应商</text>
+  <rect x="330" y="20" width="180" height="46" rx="6" class="svg-box"/><text x="344" y="40" class="svg-label">ERP UI</text><text x="344" y="57" class="svg-sub">浏览器</text>
+  <rect x="526" y="20" width="180" height="46" rx="6" class="svg-box"/><text x="540" y="40" class="svg-label">MES 终端</text><text x="540" y="57" class="svg-sub">触摸 / 扫码</text>
+  <rect x="722" y="20" width="230" height="46" rx="6" class="svg-box"/><text x="736" y="40" class="svg-label">门户 / 移动端</text><text x="736" y="57" class="svg-sub">客户 · 供应商 · PWA</text>
+
+  <rect x="8" y="92" width="964" height="118" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="24" y="118" class="svg-label">Carbon 应用区（内网）</text>
+  <rect x="24" y="130" width="200" height="62" rx="6" class="svg-box"/><text x="38" y="152" class="svg-label">应用服务</text><text x="38" y="172" class="svg-sub">loader/action · 服务函数</text>
+  <rect x="240" y="130" width="200" height="62" rx="6" class="svg-box"/><text x="254" y="152" class="svg-label">outbox / 死信</text><text x="254" y="172" class="svg-sub">幂等 · 重放 · 状态机</text>
+  <rect x="456" y="130" width="200" height="62" rx="6" class="svg-box"/><text x="470" y="152" class="svg-label">Redis</text><text x="470" y="172" class="svg-sub">查询缓存 · 限流 · 锁</text>
+  <rect x="672" y="130" width="284" height="62" rx="6" class="svg-box"/><text x="686" y="152" class="svg-label">映射与对账</text><text x="686" y="172" class="svg-sub">sapObjectMap · reconDiff · 日对账</text>
+
+  <rect x="8" y="224" width="964" height="62" rx="8" fill="#fff" stroke="#d1d5db" stroke-dasharray="4 3"/>
+  <text x="24" y="248" class="svg-label">DMZ · 集成层</text>
+  <rect x="150" y="234" width="240" height="42" rx="6" class="svg-box"/><text x="164" y="252" class="svg-label">API 网关</text><text x="164" y="268" class="svg-sub">限流 · 鉴权 · 转换</text>
+  <rect x="406" y="234" width="240" height="42" rx="6" class="svg-box"/><text x="420" y="252" class="svg-label">事件总线</text><text x="420" y="268" class="svg-sub">Business Events / IDoc</text>
+  <rect x="662" y="234" width="294" height="42" rx="6" class="svg-box"/><text x="676" y="252" class="svg-label">可观测</text><text x="676" y="268" class="svg-sub">correlationId · 耗时 · 失败率</text>
+
+  <rect x="8" y="300" width="964" height="52" rx="8" fill="#f4f6ff" stroke="#c7cff0"/>
+  <text x="24" y="322" class="svg-label">SAP 核心区</text>
+  <text x="24" y="342" class="svg-sub">S/4HANA OData API · RFC/BAPI · IDoc</text>
+  <text x="420" y="322" class="svg-sub">SD · MM · PP · QM · PS · CO · FI</text>
+  <text x="760" y="322" class="svg-sub">禁止应用直连数据库</text>
+
+  <path d="M470,70 L470,128" class="svg-arrow-strong"/>
+  <path d="M470,192 L470,230" class="svg-arrow-strong"/>
+  <path d="M470,278 L470,298" class="svg-arrow-strong"/>
+</svg>
+<figcaption>图 5-1　四区分离：用户区 → 应用区 → DMZ 集成层 → SAP 核心区；跨区只走网关，应用不得直连 SAP 数据库。</figcaption>
+</figure>
+
+<h3>5.1 三条通道</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:16%">通道</th><th style="width:26%">用途</th><th style="width:30%">典型对象与接口</th><th>约束</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>A 同步查询</strong><br /><span class="small">OData GET</span></td>
+      <td>前台读：物料、库存、订单状态、成本汇总</td>
+      <td><code>API_PRODUCT_SRV</code> · <code>API_MATERIAL_STOCK_SRV</code> · <code>API_SALES_ORDER_SRV</code></td>
+      <td>必须缓存（30–60s）+ 800ms 超时；超时回缓存并标注“数据时间”</td>
+    </tr>
+    <tr>
+      <td><strong>B 同步写</strong><br /><span class="small">OData POST / BAPI</span></td>
+      <td>少量、需即时结果：销售订单、生产订单确认</td>
+      <td><code>API_SALES_ORDER_SRV</code> · <code>API_PRODORDER_CONFIRMATION</code></td>
+      <td>2s 超时；超时自动转 outbox 并提示“处理中”</td>
+    </tr>
+    <tr>
+      <td><strong>C 异步批量</strong><br /><span class="small">IDoc / 队列</span></td>
+      <td>大批量、可延迟：收货、库存移动、发票</td>
+      <td><code>WMMBID02</code> · <code>API_MATERIAL_DOCUMENT_SRV</code> · 发票 IDoc</td>
+      <td>幂等 + 日对账；夜间窗口优先，单批 ≤500 行</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="t">禁止事项</div>
+  <p>① Carbon 直连 SAP 数据库或 RFC 直连绕过网关；② SAP 回调 Carbon 的私有接口（只能走网关或事件）；③ 用“全量同步”代替增量（物料主数据每天全量会把 SAP 拖死）；④ 在 Carbon 内做库存结存或成本结转。</p>
+</div>
+
+<!-- ============ 6 ============ -->
+<h2 id="s6"><span class="num">06</span>接口清单</h2>
+<p class="lede">下表是 P0–P3 的全部标准化接口。SAP 对象名随版本有差异，落地前用 API Hub 核对并锁版本；接口契约进仓库，变更走评审。</p>
+
+<div class="tw">
+<table>
+  <caption>表 6-1　标准化接口清单（18 条；方向 C→S 为 Carbon 发起）</caption>
+  <thead>
+    <tr>
+      <th style="width:7%">编号</th><th style="width:16%">对象</th><th style="width:6%">方向</th>
+      <th style="width:25%">SAP 接口</th><th style="width:15%">触发</th>
+      <th style="width:18%">幂等键</th><th>SLA</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="num">I-01</td><td>物料主数据</td><td><span class="tag">S→C</span></td><td><code>API_PRODUCT_SRV</code>（LastChangedAt 增量）</td><td>15min / 手动</td><td><code>materialNumber</code></td><td>15min</td></tr>
+    <tr><td class="num">I-02</td><td>客户 / 供应商</td><td><span class="tag">S→C</span></td><td><code>API_BUSINESS_PARTNER</code></td><td>15min</td><td><code>bpId</code></td><td>15min</td></tr>
+    <tr><td class="num">I-03</td><td>工厂 / 库位 / 工作中心</td><td><span class="tag">S→C</span></td><td><code>API_PLANT</code> · <code>API_STORAGELOCATION</code></td><td>每日</td><td><code>id</code></td><td>1d</td></tr>
+    <tr><td class="num">I-04</td><td>库存余额</td><td><span class="tag">S→C</span></td><td><code>API_MATERIAL_STOCK_SRV</code></td><td>查询时（缓存）</td><td>—</td><td>800ms</td></tr>
+    <tr><td class="num">I-05</td><td>销售订单创建</td><td><span class="tag ok">C→S</span></td><td><code>API_SALES_ORDER_SRV</code> deep insert</td><td>用户提交</td><td><code>SO:{id}:v{n}</code></td><td>2s / 异步</td></tr>
+    <tr><td class="num">I-06</td><td>销售订单状态</td><td><span class="tag">S→C</span></td><td>OData / Business Event <code>SalesOrder.Changed</code></td><td>事件 / 5min</td><td><code>soNumber</code></td><td>5min</td></tr>
+    <tr><td class="num">I-07</td><td>采购申请 / 订单</td><td><span class="tag ok">C→S</span></td><td><code>API_PURCHASEORDER_PROCESS_SRV</code></td><td>用户提交</td><td><code>PR:{id}</code></td><td>2s</td></tr>
+    <tr><td class="num">I-08</td><td>收货 / 库存移动</td><td><span class="tag ok">C→S</span></td><td><code>API_MATERIAL_DOCUMENT_SRV</code> / IDoc <code>WMMBID02</code></td><td>扫码提交</td><td><code>MVT:{id}</code></td><td>5s / 15min</td></tr>
+    <tr><td class="num">I-09</td><td>生产订单下发</td><td><span class="tag">S→C</span></td><td><code>API_PRODUCTION_ORDER_2_SRV</code></td><td>事件 / 5min</td><td><code>prodOrder</code></td><td>5min</td></tr>
+    <tr><td class="num">I-10</td><td>报工确认</td><td><span class="tag ok">C→S</span></td><td><code>API_PRODORDER_CONFIRMATION</code> / BAPI</td><td>工序完成</td><td><code>CONF:{opId}:{seq}</code></td><td>5s</td></tr>
+    <tr><td class="num">I-11</td><td>检验批</td><td><span class="tag">S→C</span></td><td><code>API_INSPECTIONLOT_SRV</code></td><td>事件 / 轮询</td><td><code>inspectionLot</code></td><td>15min</td></tr>
+    <tr><td class="num">I-12</td><td>检验结果</td><td><span class="tag ok">C→S</span></td><td><code>API_INSPECTIONRESULT_SRV</code></td><td>检验完成</td><td><code>IR:{lot}:{char}</code></td><td>15min</td></tr>
+    <tr><td class="num">I-13</td><td>序列号主数据</td><td><span class="tag">S→C</span></td><td><code>API_SERIALNUMBER</code> / 自定义 CDS</td><td>入库后</td><td><code>serialNumber</code></td><td>15min</td></tr>
+    <tr><td class="num">I-14</td><td>交货单</td><td><span class="tag">S→C</span></td><td><code>API_OUTBOUND_DELIVERY_SRV</code></td><td>事件</td><td><code>deliveryNumber</code></td><td>5min</td></tr>
+    <tr><td class="num">I-15</td><td>开票申请</td><td><span class="tag ok">C→S</span></td><td><code>API_BILLING_DOCUMENT_SRV</code></td><td>里程碑 / 发货</td><td><code>INVREQ:{id}</code></td><td>异步</td></tr>
+    <tr><td class="num">I-16</td><td>项目 WBS / 里程碑</td><td><span class="tag">S→C</span></td><td><code>API_PROJECTDEFINITION_SRV</code></td><td>每日 + 事件</td><td><code>wbsElement</code></td><td>1d</td></tr>
+    <tr><td class="num">I-17</td><td>项目成本汇总</td><td><span class="tag">S→C</span></td><td>CO 报表 CDS</td><td>每日</td><td><code>wbs+period</code></td><td>1d</td></tr>
+    <tr><td class="num">I-18</td><td>供应商发票</td><td><span class="tag">S→C</span></td><td><code>API_SUPPLIERINVOICE_PROCESS_SRV</code></td><td>事件</td><td><code>invoiceNumber</code></td><td>1d</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6.1 契约规范</h3>
+<ul>
+  <li>每个接口一份契约：<code>openapi.yaml</code>（OData 场景）或 <code>idoc-&lt;name&gt;.md</code>（IDoc 场景）+ 样例报文 + 字段映射表。</li>
+  <li>契约变更走评审：字段新增向后兼容，字段删除需双写过渡期（≥1 个版本）。</li>
+  <li>契约测试进 CI：用录制报文做回放，防止 SAP 升级后静默变更。</li>
+  <li>错误码字典：SAP 业务错误（4xx/消息号）必须映射为用户可读中文，原始消息号保留在日志。</li>
+</ul>
+
+<!-- ============ 7 ============ -->
+<h2 id="s7"><span class="num">07</span>主数据与 ID 治理</h2>
+<p class="lede">双系统集成 80% 的“数据不对”，根因都在主数据与标识。映射表是地基，必须先建。</p>
+
+<h3>7.1 双 ID 与映射表</h3>
+<pre><code>CREATE TABLE "sapObjectMap" (
+  id            text PRIMARY KEY DEFAULT xid(),
+  "companyId"   text NOT NULL,
+  "objectType"  text NOT NULL,         -- material/customer/so/po/prodOrder/serial...
+  "carbonId"    text NOT NULL,
+  "sapKey"      text NOT NULL,         -- SAP 业务编号（保留前导零）
+  "sapSystem"   text NOT NULL,         -- 多客户端/多公司码时区分
+  "validFrom"   timestamptz NOT NULL DEFAULT now(),
+  "validTo"     timestamptz,           -- 失效不删，保留历史
+  UNIQUE ("companyId","objectType","carbonId","sapSystem","validFrom")
+);
+CREATE INDEX ON "sapObjectMap" ("objectType","sapKey");</code></pre>
+
+<h3>7.2 SAP 特有的七个坑</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">坑</th><th>表现</th><th style="width:38%">处理</th></tr></thead>
+  <tbody>
+    <tr><td>前导零</td><td>物料号 <code>10023</code> 与 <code>0000000000010023</code> 匹配不上</td><td>统一 <code>padStart(18,'0')</code> 存储，展示去零</td></tr>
+    <tr><td>单位双码</td><td>SAP 内部单位 <code>ST</code> vs ISO <code>PCE</code></td><td>单位映射表 + 换算因子，禁止两处各存一套</td></tr>
+    <tr><td>金额精度</td><td>packed decimal 与 JS float 不一致，差几分钱</td><td>统一 <code>numeric(19,6)</code>，传输用字符串</td></tr>
+    <tr><td>日期格式</td><td><code>/Date(1731000000000)/</code></td><td>网关统一转 ISO8601</td></tr>
+    <tr><td>时区</td><td>单据日期与过账日期混淆</td><td>分别存储，界面标注“过账日”</td></tr>
+    <tr><td>多公司码/工厂</td><td>报文缺 plant 导致过账到错工厂</td><td>每条报文强制带 <code>companyCode</code>/<code>plant</code></td></tr>
+    <tr><td>删除/冻结</td><td>deletion flag ≠ 物理删除</td><td>Carbon 侧只做“不可选”，历史单不删</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>7.3 主数据同步策略</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:18%">对象</th><th style="width:14%">策略</th><th style="width:20%">频率</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>物料</td><td>增量（LastChangedAt）+ 夜间全量校验</td><td>15min / 1d</td><td>只同步本工厂相关视图，减少 90% 数据量</td></tr>
+    <tr><td>客户/供应商</td><td>增量</td><td>15min</td><td>只同步已启用 + 有交易的对象</td></tr>
+    <tr><td>BOM / 工艺</td><td>按需拉取（进入工单时）</td><td>实时</td><td>全量同步代价高，按单拉取 + 短缓存</td></tr>
+    <tr><td>库存</td><td>查询时读 + 60s 缓存</td><td>实时</td><td>不落地，避免“两套库存数”</td></tr>
+    <tr><td>序列号</td><td>增量</td><td>15min</td><td>只同步已交付/在制设备级，不含电芯级</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="t">主数据申请闭环</div>
+  <p>Carbon 发起“新建物料/客户”申请 → 网关落 SAP 申请表 → SAP 审批建码 → 事件回传 → Carbon 自动补全映射。全程可查，不允许“先在 Carbon 建一个临时码，以后再说”——临时码是双系统集成的第一颗雷。</p>
+</div>
+
+<!-- ============ 8 ============ -->
+<h2 id="s8"><span class="num">08</span>一致性与事务</h2>
+<p class="lede">跨系统没有分布式事务。方案是：本地事务 + outbox + 幂等 + 对账，用工程手段换取最终一致。</p>
+
+<h3>8.1 三种交互模式</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:16%">模式</th><th style="width:24%">适用</th><th style="width:32%">机制</th><th>用户体验</th></tr></thead>
+  <tbody>
+    <tr><td><strong>查 · Cache-Aside</strong></td><td>物料、库存、订单状态</td><td>读 Redis（TTL 30–60s），miss 才调 SAP；stale-while-revalidate</td><td>首屏快；显示“数据截至 HH:mm”</td></tr>
+    <tr><td><strong>写 · Outbox</strong></td><td>报工、移动、开票申请</td><td>本地事务写 outbox → 异步调 SAP → 回写状态</td><td>提交即成功（本地），角标显示同步状态</td></tr>
+    <tr><td><strong>写 · Write-Through</strong></td><td>销售订单创建、生产确认</td><td>同步调 SAP，2s 超时；超时转 outbox</td><td>显示 SAP 单号或“处理中”</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.2 outbox 表与状态机</h3>
+<div class="two-col">
+<pre><code>CREATE TABLE "sapOutbox" (
+  id              text PRIMARY KEY DEFAULT xid(),
+  "objectType"    text NOT NULL,
+  "carbonId"      text NOT NULL,
+  "idempotencyKey" text NOT NULL UNIQUE,
+  payload         jsonb NOT NULL,   -- 已转成 SAP 契约
+  status          text NOT NULL DEFAULT 'Pending',
+                  -- Pending/Sending/Synced/Failed/Dead
+  attempts        int  NOT NULL DEFAULT 0,
+  "sapKey"        text,
+  "lastError"     text,
+  "nextAttemptAt" timestamptz,
+  "createdAt"     timestamptz NOT NULL DEFAULT now()
+);</code></pre>
+<div>
+<figure style="margin-top:0">
+<svg viewBox="0 0 380 240" role="img" aria-label="outbox 状态机">
+  <rect x="10" y="10" width="110" height="38" rx="19" class="svg-box"/><text x="30" y="34" class="svg-label">Pending</text>
+  <rect x="140" y="10" width="110" height="38" rx="19" class="svg-box"/><text x="160" y="34" class="svg-label">Sending</text>
+  <rect x="270" y="10" width="100" height="38" rx="19" class="svg-box-accent"/><text x="290" y="34" class="svg-label">Synced</text>
+  <rect x="140" y="95" width="110" height="38" rx="19" class="svg-box"/><text x="160" y="119" class="svg-label">Failed</text>
+  <rect x="140" y="180" width="110" height="38" rx="19" class="svg-box" stroke="#fda4af" fill="#fff1f2"/><text x="164" y="204" class="svg-label">Dead</text>
+  <path d="M120,29 L138,29" class="svg-arrow"/>
+  <path d="M250,29 L268,29" class="svg-arrow"/>
+  <path d="M195,48 L195,93" class="svg-arrow"/>
+  <path d="M195,133 L195,178" class="svg-arrow"/>
+  <path d="M140,114 L128,114 L128,29 L136,29" class="svg-arrow"/>
+  <text x="124" y="80" class="svg-sub" style="text-anchor:end;font-size:9.5px">重试</text>
+  <text x="204" y="165" class="svg-sub">超限</text>
+</svg>
+<figcaption>图 8-1　每条写请求的状态可追踪；死信必须有人工重放入口。</figcaption>
+</figure>
+</div>
+</div>
+
+<h3>8.3 失败处理策略</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:26%">场景</th><th style="width:32%">判定</th><th>处理</th></tr></thead>
+  <tbody>
+    <tr><td>SAP 业务拒绝</td><td>4xx / 消息号 E 类</td><td>不重试；标记 Failed；UI 展示中文解释 + 原始消息号</td></tr>
+    <tr><td>超时 / 5xx / 限流</td><td>HTTP 408/429/5xx</td><td>指数退避（1s→2s→…→5min，≤10 次）；仍失败进 Dead</td></tr>
+    <tr><td>重复提交</td><td>同幂等键已存在</td><td>返回既有 sapKey（幂等成功，不算错误）</td></tr>
+    <tr><td>SAP 长时不可用</td><td>连续 5 分钟失败率 &gt;50%</td><td>降级为“只读 + 排队”；顶部横幅；禁止新建跨系统单据</td></tr>
+    <tr><td>部分成功</td><td>批量 IDoc 中部分行失败</td><td>按行记录结果，失败行进 Dead，成功行不回滚</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.4 对账（没有对账就没有集成）</h3>
+<div class="cards">
+  <div class="card"><h4>日对账</h4><p>按对象比对“Carbon 已提交”与“SAP 已存在”，差异写 <code>reconDiff</code> 并指派责任人。</p></div>
+  <div class="card"><h4>状态对账</h4><p>SAP 状态变化必须回刷 Carbon：事件优先，轮询兜底（15min）。</p></div>
+  <div class="card"><h4>金额对账</h4><p>开票/收货金额与 SAP 凭证核对，月度财务签字，差异有台账。</p></div>
+</div>
+
+<!-- ============ 9 ============ -->
+<h2 id="s9"><span class="num">09</span>关键场景时序</h2>
+
+<h3>9.1 销售订单：报价 → SAP 订单</h3>
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="b"><strong>Carbon 报价与配置确认</strong><span>校验客户信用占位、物料可售、交期可行性（数据来自 SAP 缓存）</span></div></div>
+  <div class="step"><div class="n">2</div><div class="b"><strong>提交订单（I-05）</strong><span>网关 → <code>API_SALES_ORDER_SRV</code> deep insert，携带幂等键 <code>SO:{id}:v1</code></span></div></div>
+  <div class="step"><div class="n">3</div><div class="b"><strong>SAP 返回订单号</strong><span>Carbon 写映射表、状态 <code>Synced</code>，页面展示 SAP 单号</span></div></div>
+  <div class="step"><div class="n">4</div><div class="b"><strong>后续变更回传（I-06）</strong><span>事件优先；轮询兜底；Carbon 只更新镜像字段，不允许本地改状态</span></div></div>
+</div>
+
+<h3>9.2 车间执行：SAP 生产订单 → Carbon 执行 → 回传确认</h3>
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="b"><strong>SAP 下发生产订单（I-09）</strong><span>订单号、组件需求、工序顺序、计划日期 → Carbon 生成执行单</span></div></div>
+  <div class="step"><div class="n">2</div><div class="b"><strong>扫码开工 / 报工</strong><span>操作员扫工单码与料码，录入数量、工时、废品；SN 父子关系在本地建立</span></div></div>
+  <div class="step"><div class="n">3</div><div class="b"><strong>回传确认（I-10）</strong><span>outbox → <code>API_PRODORDER_CONFIRMATION</code>；成功回写确认号</span></div></div>
+  <div class="step"><div class="n">4</div><div class="b"><strong>EOL 检验（I-12）</strong><span>测量值入库；结果回写 SAP 检验批，触发使用决策</span></div></div>
+</div>
+
+<h3>9.3 收货与库存移动：Carbon 发起，SAP 记账</h3>
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="b"><strong>仓管扫码收货</strong><span>PO、行号、批次、SN、数量；本地先校验（不重复、不超收）</span></div></div>
+  <div class="step"><div class="n">2</div><div class="b"><strong>写 outbox（I-08）</strong><span>幂等键 <code>MVT:{id}</code>，负载转成物料凭证报文（101/105）</span></div></div>
+  <div class="step"><div class="n">3</div><div class="b"><strong>SAP 过账</strong><span>返回物料凭证号；Carbon 回写并失效该物料+库位的库存缓存</span></div></div>
+  <div class="step"><div class="n">4</div><div class="b"><strong>日对账</strong><span>数量与金额双向核对，差异进 <code>reconDiff</code></span></div></div>
+</div>
+
+<h3>9.4 项目成本：只读，不重算</h3>
+<div class="callout">
+  <div class="t">硬约束</div>
+  <p>Carbon <strong>不计算</strong>项目成本。项目毛利 = SAP 开票收入 − SAP 成本归集（材料 + 人工 + 外协 + 费用），按 WBS 汇总，每日同步一次。Carbon 侧只做展示与钻取，任何“帮 SAP 算一遍”的设计都必须驳回。</p>
+</div>
+
+<!-- ============ 10 ============ -->
+<h2 id="s10"><span class="num">10</span>追溯与质量</h2>
+<p class="lede">双系统下最容易做错的三件事：SN 存两套、检验结果两份、追溯两个入口。明确如下。</p>
+
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">事项</th><th>规则</th><th style="width:34%">落地</th></tr></thead>
+  <tbody>
+    <tr><td>序列号登记</td><td>SAP 是“登记处”（合规与估值），管到设备级（柜/簇）</td><td>I-13 单向同步；电芯级不推 SAP</td></tr>
+    <tr><td>装配血缘</td><td>Carbon 拥有父子关系（电芯批次 → 模组 → 簇 → 柜 → 站点）</td><td><code>trackedGenealogy</code>，装配报工时写边</td></tr>
+    <tr><td>检验批</td><td>SAP 建批（QM 触发），Carbon 采集实测值</td><td>I-11 下发、I-12 回写</td></tr>
+    <tr><td>追溯入口</td><td>统一在 Carbon：一个页面聚合“血缘 + SAP 状态”</td><td>页面标注数据来源与时间</td></tr>
+  </tbody>
+</table>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 220" role="img" aria-label="追溯数据来源">
+  <rect x="10" y="20" width="250" height="70" rx="8" class="svg-box-sap"/>
+  <text x="26" y="46" class="svg-label">SAP 序列号 / 批次主数据</text>
+  <text x="26" y="68" class="svg-sub">登记 · 估值 · 合规</text>
+
+  <rect x="10" y="120" width="250" height="70" rx="8" class="svg-box-accent"/>
+  <text x="26" y="146" class="svg-label">Carbon 装配血缘</text>
+  <text x="26" y="168" class="svg-sub">父子关系 · 工单 · 操作人</text>
+
+  <rect x="340" y="60" width="220" height="90" rx="8" class="svg-box"/>
+  <text x="356" y="88" class="svg-label">追溯查询页</text>
+  <text x="356" y="110" class="svg-sub">向上：用了哪些电芯批次</text>
+  <text x="356" y="130" class="svg-sub">向下：去了哪些项目</text>
+
+  <rect x="620" y="60" width="270" height="90" rx="8" class="svg-box"/>
+  <text x="636" y="88" class="svg-label">输出物</text>
+  <text x="636" y="110" class="svg-sub">认证取证 · 召回范围 · 质保索赔</text>
+  <text x="636" y="130" class="svg-sub">CSV / PDF，带时间戳</text>
+
+  <path d="M262,55 L338,90" class="svg-arrow"/>
+  <path d="M262,155 L338,120" class="svg-arrow"/>
+  <path d="M562,105 L618,105" class="svg-arrow-strong"/>
+</svg>
+<figcaption>图 10-1　追溯是“聚合视图”，不是“再存一份数据”；两个系统各自拥有自己的事实。</figcaption>
+</figure>
+
+<!-- ============ 11 ============ -->
+<h2 id="s11"><span class="num">11</span>安全与审计</h2>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:16%">项</th><th>方案</th><th style="width:30%">约束</th></tr></thead>
+  <tbody>
+    <tr><td>身份</td><td>企业 IdP（AD/Entra）SAML/OIDC 单点登录，Carbon 与 SAP 同一身份源</td><td>一人一账号，禁止共享</td></tr>
+    <tr><td>授权</td><td>Carbon 角色决定“能看什么界面”；业务授权以 SAP 为准（信用、审批、释放）；两者取交集</td><td>不得把 SAP 授权结果长期缓存做判断</td></tr>
+    <tr><td>越权防护</td><td>关键写操作前做一次 SAP 侧校验（或网关 scope 校验）</td><td>写接口最小权限</td></tr>
+    <tr><td>审计</td><td>每个跨系统操作生成 <code>correlationId</code>，两侧日志可串联；保留 ≥3 年</td><td>审计不可被应用删除</td></tr>
+    <tr><td>服务账号</td><td>网关专用技术账号，mTLS 证书，密钥入 Vault，90 天轮换</td><td>禁止个人账号跑集成</td></tr>
+    <tr><td>数据边界</td><td>Carbon 只存业务执行数据；成本/财务明细不在 Carbon 落地（只存汇总）</td><td>出口业务注意数据出境</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 12 ============ -->
+<h2 id="s12"><span class="num">12</span>部署与容量</h2>
+
+<h3>12.1 网络与部署</h3>
+<pre><code>[办公网] → [Carbon 应用区: Web + MES + outbox] → [DMZ: 网关 / 事件总线] → [SAP 核心区]
+                    ↕ Redis / 对象存储 / 只读副本(BI)</code></pre>
+
+<h3>12.2 超时与限流预算</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:18%">动作</th><th style="width:16%">超时</th><th style="width:20%">重试</th><th>降级</th></tr></thead>
+  <tbody>
+    <tr><td>查询（GET）</td><td>800ms</td><td>1 次</td><td>回缓存，标注数据时间</td></tr>
+    <tr><td>同步写</td><td>2s</td><td>不重试（转 outbox）</td><td>提示“处理中”，后台继续</td></tr>
+    <tr><td>异步写（outbox）</td><td>30s</td><td>指数退避 ≤10 次</td><td>死信 + 人工重放</td></tr>
+    <tr><td>批量 IDoc</td><td>夜间窗口</td><td>按行重试</td><td>失败行单独重放</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>12.3 高可用与备份</h3>
+<ul>
+  <li>Carbon 应用双副本无状态；outbox 与映射表随主库备份。</li>
+  <li>Postgres：主备 + WAL 归档；备份 RPO ≤15 分钟、RTO ≤4 小时，每季度演练恢复。</li>
+  <li>SAP 侧沿用现有 HA 与备份策略；接口层故障不影响 SAP 自身运行。</li>
+  <li>接口监控：成功率、P95 耗时、积压深度、死信数，四项进值班看板。</li>
+</ul>
+
+<h3>12.4 ECC 与 S/4HANA 差异</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:20%">能力</th><th style="width:34%">S/4HANA（本方案默认）</th><th>ECC 6.0 兜底方案</th></tr></thead>
+  <tbody>
+    <tr><td>读写接口</td><td>OData V2/V4（<code>API_*_SRV</code>）</td><td>RFC/BAPI + 中间件转换；或 IDoc</td></tr>
+    <tr><td>事件</td><td>Business Events / Event Mesh</td><td>轮询变更时间戳（<code>AEDAT</code>/<code>UPNAM</code>）或 IDoc 状态</td></tr>
+    <tr><td>批量</td><td>OData 批量 + IDoc</td><td>以 IDoc 为主，夜间窗口</td></tr>
+    <tr><td>网关</td><td>Integration Suite</td><td>Integration Suite / PI-PO / 自研网关</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 13 ============ -->
+<h2 id="s13"><span class="num">13</span>实施路线与工作量</h2>
+
+<figure>
+<svg viewBox="0 0 980 190" role="img" aria-label="四期实施路线">
+  <g transform="translate(0,-42)">
+  <line x1="40" y1="200" x2="940" y2="200" stroke="#d1d5db"/>
+  <g>
+    <rect x="40" y="120" width="210" height="56" rx="7" class="svg-box-accent"/>
+    <text x="56" y="144" class="svg-label">P0 · 只读镜像</text>
+    <text x="56" y="164" class="svg-sub">8 周 · 主数据/库存/状态</text>
+    <text x="40" y="188" class="svg-sub">W1–W8</text>
+
+    <rect x="270" y="120" width="230" height="56" rx="7" class="svg-box-accent"/>
+    <text x="286" y="144" class="svg-label">P1 · 写闭环</text>
+    <text x="286" y="164" class="svg-sub">10 周 · 订单/收货/报工</text>
+    <text x="270" y="188" class="svg-sub">W9–W18</text>
+
+    <rect x="520" y="120" width="200" height="56" rx="7" class="svg-box"/>
+    <text x="536" y="144" class="svg-label">P2 · 质量追溯</text>
+    <text x="536" y="164" class="svg-sub">8 周 · 检验/SN/血缘</text>
+    <text x="520" y="188" class="svg-sub">W19–W26</text>
+
+    <rect x="740" y="120" width="200" height="56" rx="7" class="svg-box"/>
+    <text x="756" y="144" class="svg-label">P3 · 项目售后</text>
+    <text x="756" y="164" class="svg-sub">10 周 · WBS/开票/质保</text>
+    <text x="740" y="188" class="svg-sub">W27–W36</text>
+  </g>
+  <circle cx="40" cy="200" r="4" fill="#0f6b5c"/><circle cx="270" cy="200" r="4" fill="#0f6b5c"/>
+  <circle cx="520" cy="200" r="4" fill="#94a3b8"/><circle cx="740" cy="200" r="4" fill="#94a3b8"/>
+  <circle cx="940" cy="200" r="4" fill="#94a3b8"/>
+  <text x="40" y="106" class="svg-label">M1 前台可用</text>
+  <text x="270" y="106" class="svg-label">M2 双跑一致</text>
+  <text x="520" y="106" class="svg-label">M3 追溯可查</text>
+  <text x="740" y="106" class="svg-label">M4 项目闭环</text>
+  </g>
+</svg>
+<figcaption>图 13-1　先让前台“好用”（P0），再谈写闭环（P1）——顺序颠倒会让项目在 6 个月内失去业务支持。</figcaption>
+</figure>
+
+<div class="tw">
+<table>
+  <caption>表 13-1　分期范围与验收标准</caption>
+  <thead><tr><th style="width:10%">期</th><th style="width:10%">周</th><th style="width:38%">范围</th><th>验收（可量化）</th></tr></thead>
+  <tbody>
+    <tr><td><strong>P0</strong></td><td class="num">1–8</td><td>SSO、映射表、物料/客户/供应商/工厂/库存/订单状态只读、缓存、对账框架</td><td>前台 90% 查询不直连 SAP 也能出数，缓存命中 ≥80%</td></tr>
+    <tr><td><strong>P1</strong></td><td class="num">9–18</td><td>销售订单创建、采购申请、收货/移动、生产订单下发、报工确认</td><td>双跑 100 单：SAP 侧 100% 落账，0 重复，0 丢失</td></tr>
+    <tr><td><strong>P2</strong></td><td class="num">19–26</td><td>检验批/结果、SN 主数据与血缘、追溯页</td><td>任取柜 SN：可同时看到 SAP 状态与全部下级血缘，≤5s</td></tr>
+    <tr><td><strong>P3</strong></td><td class="num">27–36</td><td>项目 WBS 展示、成本只读、开票申请、装机/质保/派工</td><td>项目毛利与 SAP 报表偏差 &lt;1%；质保工单可回写服务成本</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>13.1 工作量分解</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:26%">工作包</th><th style="width:14%">人月</th><th>内容</th></tr></thead>
+  <tbody>
+    <tr><td>Carbon 二开</td><td class="num">14</td><td>映射/outbox/对账、只读页面改造、执行单与报工、检验采集、追溯页、售后</td></tr>
+    <tr><td>集成层</td><td class="num">10</td><td>网关路由与转换、限流、幂等、重试、监控、契约测试</td></tr>
+    <tr><td>SAP 侧</td><td class="num">6–10</td><td>API 启用、权限与账号、IDoc 配置、CDS 扩展、BASIS 支撑</td></tr>
+    <tr><td>测试与双跑</td><td class="num">6</td><td>契约测试、端到端、故障注入、双跑对账、UAT</td></tr>
+    <tr><td>项目管理与培训</td><td class="num">4</td><td>PM、SOP、关键用户培训、上线陪跑</td></tr>
+    <tr><td><strong>合计</strong></td><td class="num"><strong>40–44</strong></td><td>按 36 周、6–7 人团队估算</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 14 ============ -->
+<h2 id="s14"><span class="num">14</span>风险与反模式</h2>
+
+<div class="tw">
+<table>
+  <caption>表 14-1　风险登记册</caption>
+  <thead><tr><th style="width:24%">风险</th><th style="width:8%">概率</th><th style="width:8%">影响</th><th>缓解</th><th style="width:10%">Owner</th></tr></thead>
+  <tbody>
+    <tr><td>生产订单归属未定</td><td><span class="tag mid">中</span></td><td><span class="tag no">高</span></td><td>立项首周签字确认；写入 ADR-07</td><td>业务架构</td></tr>
+    <tr><td>SAP 接口开发排期长</td><td><span class="tag no">高</span></td><td><span class="tag no">高</span></td><td>P0 只读先行；接口契约提前冻结；SAP 顾问进项目组</td><td>PM</td></tr>
+    <tr><td>物料主数据质量差</td><td><span class="tag no">高</span></td><td><span class="tag mid">中</span></td><td>P0 做数据体检；缺失字段先标“未知”并进清理清单</td><td>主数据Owner</td></tr>
+    <tr><td>双写导致账实不符</td><td><span class="tag mid">中</span></td><td><span class="tag no">高</span></td><td>铁律 2；库存只读；移动全部走请求</td><td>架构</td></tr>
+    <tr><td>SAP 限流/性能</td><td><span class="tag mid">中</span></td><td><span class="tag mid">中</span></td><td>缓存 + 异步 + 夜间批量；与 BASIS 约定配额</td><td>集成</td></tr>
+    <tr><td>序列号粒度失控</td><td><span class="tag mid">中</span></td><td><span class="tag no">高</span></td><td>SAP 只到设备级；电芯级在 Carbon</td><td>制造</td></tr>
+    <tr><td>关键人依赖</td><td><span class="tag no">高</span></td><td><span class="tag mid">中</span></td><td>契约与 SOP 文档化；代码评审强制</td><td>PM</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>14.1 七个反模式</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:30%">反模式</th><th style="width:34%">后果</th><th>替代做法</th></tr></thead>
+  <tbody>
+    <tr><td>双状态机（两边都能改状态）</td><td>数据永久不一致，无法定责</td><td>一方只读，状态由接口写入</td></tr>
+    <tr><td>字段双向同步</td><td>循环更新、互相覆盖</td><td>一字段一 owner，单向推送</td></tr>
+    <tr><td>Carbon 自建库存账</td><td>两套账，月结对不平</td><td>库存只读 + 移动请求</td></tr>
+    <tr><td>所有写都同步调 SAP</td><td>限流、前台卡死</td><td>关键同步，其余 outbox</td></tr>
+    <tr><td>忽略单位/精度/前导零</td><td>数量金额错、物料匹配失败</td><td>映射层统一转换</td></tr>
+    <tr><td>没有对账</td><td>错误在月结才暴露</td><td>日对账 + 差异表 + 责任人</td></tr>
+    <tr><td>一次上线大而全</td><td>18 个月不见效，失去支持</td><td>P0 只读先行，快速见效</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============ 15 ============ -->
+<h2 id="s15"><span class="num">15</span>架构决策记录</h2>
+
+<div class="adr"><div class="id">ADR-07</div><div class="q">SAP 为 SoR，Carbon 为 SoE</div>
+<dl><dt>备选</dt><dd>双主 / Carbon 为主 / SAP 为主</dd><dt>理由</dt><dd>账面必须单一；前台价值在体验与执行速度，与账务强一致无必然关系</dd><dt>影响</dt><dd>Carbon 所有状态字段只读镜像；写操作均为“请求”</dd></dl></div>
+
+<div class="adr"><div class="id">ADR-08</div><div class="q">一字段一 owner，单向同步</div>
+<dl><dt>备选</dt><dd>双向同步 / 以时间戳决胜</dd><dt>理由</dt><dd>双向必然冲突且无法定责；时间戳决胜在时钟漂移下不可靠</dd><dt>影响</dt><dd>需要字段级 owner 清单并进评审</dd></dl></div>
+
+<div class="adr"><div class="id">ADR-09</div><div class="q">Carbon 拥有 EBOM/配置与 SN 血缘</div>
+<dl><dt>备选</dt><dd>全部放 SAP</dd><dt>理由</dt><dd>SAP 的工程 BOM 与多级血缘表达能力弱，改造成本高于双系统</dd><dt>影响</dt><dd>发布流程：Carbon 冻结配置 → 生成 SAP MBOM/组件</dd></dl></div>
+
+<div class="adr"><div class="id">ADR-10</div><div class="q">关键单据同步写，其余 outbox</div>
+<dl><dt>备选</dt><dd>全同步 / 全异步 / 人工批量</dd><dt>理由</dt><dd>兼顾 UX 与 SAP 限流；全同步在车间高峰期会打爆接口</dd><dt>影响</dt><dd>需要 outbox 表、死信页与状态角标</dd></dl></div>
+
+<div class="adr"><div class="id">ADR-11</div><div class="q">中间件优先用 SAP Integration Suite</div>
+<dl><dt>备选</dt><dd>自研直连 / 开源 ESB</dd><dt>理由</dt><dd>限流、转换、监控、审计开箱即用；自研只作兜底</dd><dt>影响</dt><dd>需要 BTP/IS 许可；无许可则评估自研网关</dd></dl></div>
+
+<div class="adr"><div class="id">ADR-12</div><div class="q">追溯查询统一在 Carbon</div>
+<dl><dt>备选</dt><dd>两个入口 / 以 SAP 为入口</dd><dt>理由</dt><dd>用户只需一个入口；Carbon 同时拥有血缘与 SAP 状态</dd><dt>影响</dt><dd>查询页需聚合两源并标注数据时间</dd></dl></div>
+
+<!-- ============ 16 ============ -->
+<h2 id="s16"><span class="num">16</span>附录</h2>
+
+<h3>16.1 术语</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:24%">术语</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td>SoE / SoR</td><td>System of Engagement（业务交互）/ System of Record（事实记录）</td></tr>
+    <tr><td>Outbox</td><td>本地事务内写入的待发队列，保证“业务落库”与“跨系统发送”不双写</td></tr>
+    <tr><td>幂等键</td><td>业务唯一键，重复提交不产生第二条记录</td></tr>
+    <tr><td>死信</td><td>重试耗尽仍失败的请求，需人工处理</td></tr>
+    <tr><td>WBS</td><td>项目工作分解结构（SAP PS）</td></tr>
+    <tr><td>IDoc / BAPI</td><td>SAP 的批量报文 / 函数接口</td></tr>
+    <tr><td>EBOM / MBOM</td><td>工程 BOM / 制造 BOM</td></tr>
+    <tr><td>SN 血缘</td><td>序列号之间的父子装配关系</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>16.2 立项评审必答的 8 个问题</h3>
+<ol>
+  <li>SAP 版本与模块范围（S/4 或 ECC；PP/QM/PS/CO 是否已启用）？</li>
+  <li>物料主数据是否已有工厂视图与批次/序列号管理？</li>
+  <li><strong>生产订单谁建</strong>（SAP 建、Carbon 执行，还是反过来）？</li>
+  <li>序列号粒度：SAP 到设备级还是电芯级？</li>
+  <li>是否有 SAP BTP / Integration Suite 许可？无许可的替代方案与成本？</li>
+  <li>PS 的 WBS 结构能否承载“项目 → 多机柜”的层级？</li>
+  <li>开票是否必须在 SAP（多数是），Carbon 只做申请？</li>
+  <li>网络与账号：链路、技术账号、证书、限流配额是否已与 BASIS 对齐？</li>
+</ol>
+
+<h3>16.3 评审签字</h3>
+<div class="sign">
+  <div>业务负责人<br /><span class="small">签字 / 日期</span></div>
+  <div>SAP 负责人（BASIS/ABAP）<br /><span class="small">签字 / 日期</span></div>
+  <div>架构负责人<br /><span class="small">签字 / 日期</span></div>
+</div>
+
+<footer class="doc-foot">
+  <span>Carbon（前台）+ SAP（后台）集成方案 · v1.0 · 2026-11-14</span>
+  <span>本方案基于 Carbon 源码逆向与 SAP 标准接口能力编写；接口名随 SAP 版本差异，落地前需核对并锁版本。</span>
+</footer>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if (!('IntersectionObserver' in window) || targets.length === 0) return;
+  var visible = new Map();
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ visible.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0); });
+    var best = null, bestRatio = 0;
+    visible.forEach(function(ratio, id){ if (ratio > bestRatio) { bestRatio = ratio; best = id; } });
+    if (!best) return;
+    links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#' + best); });
+  }, { rootMargin: '-10% 0px -70% 0px', threshold: [0, 0.2, 0.6, 1] });
+  targets.forEach(function(t){ io.observe(t); });
+})();
+</script>
+</body>
+</html>
