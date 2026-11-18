@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C3 资金中枢 · UI 原型</title>
+<style>
+  :root{
+    --ink:#111827; --ink2:#374151; --muted:#6b7280; --line:#e5e7eb; --line2:#d1d5db;
+    --bg:#f7f8fa; --card:#fff; --panel:#f1f5f9;
+    --accent:#0f6b5c; --accent2:#0b5449; --accent-soft:#ecf7f4;
+    --blue:#3b4ea0; --blue-soft:#f4f6ff;
+    --warn:#92400e; --warn-soft:#fffbeb;
+    --danger:#9f1239; --danger-soft:#fff1f2;
+    --r:10px; --r-sm:6px;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit}
+  .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+
+  /* ---------- sidebar ---------- */
+  .nav{border-right:1px solid var(--line);background:#fff;padding:14px 10px;position:sticky;top:0;height:100vh;overflow:auto}
+  .nav .proj{font-size:12px;color:var(--muted);padding:4px 10px 10px}
+  .nav .proj b{display:block;color:var(--ink);font-size:13px;margin-top:2px}
+  .nav a{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);text-decoration:none;font-size:13.5px;cursor:pointer;margin:1px 0}
+  .nav a:hover{background:#f1f5f9;color:var(--ink)}
+  .nav a.active{background:var(--accent-soft);color:var(--accent2);font-weight:600}
+  .nav a.child{padding-left:26px;font-size:13px}
+  .nav a .ic{width:16px;text-align:center;opacity:.75}
+  .nav .sep{height:1px;background:var(--line);margin:10px 6px}
+  .nav .badge{margin-left:auto;background:var(--danger-soft);color:var(--danger);border:1px solid #fda4af;border-radius:999px;font-size:10.5px;padding:0 6px}
+
+  /* ---------- main ---------- */
+  .main{min-width:0;display:flex;flex-direction:column}
+  .top{background:#fff;border-bottom:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:5}
+  .crumb{font-size:12px;color:var(--muted)}
+  .crumb b{color:var(--ink)}
+  .top .spacer{flex:1}
+  .top .btn{font-size:12.5px}
+  .content{padding:20px 24px 40px}
+
+  .page-title{font-size:20px;font-weight:800;margin:0 0 2px}
+  .page-sub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+
+  .btn{border:1px solid var(--line2);background:#fff;border-radius:7px;padding:6px 12px;font-size:13px;color:var(--ink2);cursor:pointer}
+  .btn:hover{background:#f8fafc}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn.primary:hover{background:#000}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.sm{padding:4px 9px;font-size:12px}
+
+  .layout{display:grid;grid-template-columns:214px minmax(0,1fr);gap:18px;align-items:start}
+
+  /* tree */
+  .tree{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px}
+  .tree .t-hd{font-size:11.5px;color:var(--muted);padding:2px 8px 8px;display:flex;justify-content:space-between}
+  .tree .node{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12.8px;color:var(--ink2)}
+  .tree .node:hover{background:#f8fafc}
+  .tree .node.active{background:var(--blue-soft);color:var(--blue);font-weight:600}
+  .tree .node .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tree .node .amt{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tree .node .amt.red{color:var(--danger)}
+  .tree .n2{padding-left:22px}
+  .tree .n3{padding-left:38px}
+  .tree .note{font-size:11px;color:var(--muted);padding:8px;border-top:1px dashed var(--line);margin-top:6px}
+
+  /* cards */
+  .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:11px 12px}
+  .kpi .l{font-size:11.5px;color:var(--muted)}
+  .kpi .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+  .kpi .v.red{color:var(--danger)}
+  .kpi .v.green{color:var(--accent2)}
+  .kpi .d{font-size:11px;color:var(--muted)}
+
+  .todos{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .todos .t{font-size:12px;color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:#fff;border-radius:999px;padding:4px 10px;font-size:12px;color:var(--ink2)}
+  .chip b{font-variant-numeric:tabular-nums}
+  .chip.warn{border-color:#fcd34d;background:var(--warn-soft);color:var(--warn)}
+  .chip.danger{border-color:#fda4af;background:var(--danger-soft);color:var(--danger)}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+  .card .hd{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .card .hd h3{margin:0;font-size:13.5px}
+  .card .hd .spacer{flex:1}
+  .card .bd{padding:12px 14px}
+  .card .bd.flush{padding:0}
+
+  table{width:100%;border-collapse:collapse;font-size:12.8px}
+  th,td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  thead th{background:#f8fafc;font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#fcfcfd}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  th.num{text-align:right}
+
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2);background:#fff;white-space:nowrap}
+  .tag.ok{border-color:#a7ded2;background:#effaf6;color:#0b5449}
+  .tag.warn{border-color:#fcd34d;background:var(--warn-soft);color:var(--warn)}
+  .tag.no{border-color:#fda4af;background:var(--danger-soft);color:var(--danger)}
+  .tag.gray{background:#f1f5f9;color:var(--muted)}
+
+  /* reconciliation */
+  .recon{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .recon .b{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .recon .l{font-size:11.5px;color:var(--muted)}
+  .recon .v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+  .recon .b.a{background:var(--accent-soft);border-color:#8dcdbf}
+  .recon .b.b{background:var(--blue-soft);border-color:#c7cff0}
+  .recon .b.c{background:var(--danger-soft);border-color:#fda4af}
+
+  .diff{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .diff .k{font-size:12.5px;font-weight:600;min-width:250px}
+  .diff .k b{font-variant-numeric:tabular-nums}
+  .diff select,.diff input{border:1px solid var(--line2);border-radius:6px;padding:5px 8px;font-size:12.5px;font-family:inherit;color:var(--ink2);background:#fff}
+  .diff input{flex:1;min-width:180px}
+  .diff .hint{font-size:11.5px;color:var(--danger)}
+
+  .anchorbar{display:flex;gap:6px;position:sticky;top:53px;background:var(--bg);padding:2px 0 10px;z-index:4}
+  .anchorbar button{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--ink2);cursor:pointer}
+  .anchorbar button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+  .note{font-size:11.5px;color:var(--muted)}
+  .screen{display:none}
+  .screen.on{display:block}
+  .hidden{display:none!important}
+  .small{font-size:11.5px;color:var(--muted)}
+  .proto{position:fixed;right:14px;bottom:14px;background:#111827;color:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;opacity:.85;z-index:9}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- sidebar -->
+  <nav class="nav">
+    <div class="proj">项目<b>BESS-01 · 500MW/2GWh</b></div>
+    <a data-nav="overview"><span class="ic">▦</span>概览</a>
+    <a data-nav="plan"><span class="ic">≡</span>计划</a>
+    <a data-nav="schedule"><span class="ic">⚑</span>排程</a>
+    <a data-nav="costs"><span class="ic">◔</span>成本</a>
+    <a class="child" data-nav="costs">库存</a>
+    <a class="child" data-nav="costs">配对</a>
+    <a class="child" data-nav="costs">账单</a>
+    <div class="sep"></div>
+    <a class="active" data-nav="finance"><span class="ic">◈</span>资金</a>
+    <a class="child" data-nav="revenue">收入</a>
+    <a class="child" data-nav="invoices">开票 <span class="badge">2</span></a>
+    <a class="child" data-nav="receipts">回款 <span class="badge">5</span></a>
+    <div class="sep"></div>
+    <a data-nav="time"><span class="ic">◷</span>时间</a>
+  </nav>
+
+  <div class="main">
+    <div class="top">
+      <div class="crumb">项目 / <b>BESS-01</b> / <span id="crumb">资金</span></div>
+      <div class="spacer"></div>
+      <button class="btn sm" onclick="alert('原型：切换到其他项目')">切换项目</button>
+      <button class="btn sm primary" onclick="alert('原型：新建收款登记')">+ 回款登记</button>
+    </div>
+
+    <div class="content">
+      <!-- ============ 资金（父页：总览 + 对账） ============ -->
+      <section class="screen on" id="s-finance">
+        <h1 class="page-title">资金</h1>
+        <p class="page-sub">合同 12,000,000 · 已确认 7,200,000 · 已开票 6,800,000 · 已收 5,400,000</p>
+
+        <div class="anchorbar">
+          <button class="on" data-anchor="a-overview">概览</button>
+          <button data-anchor="a-recon">对账</button>
+        </div>
+
+        <div class="layout">
+          <!-- tree -->
+          <aside class="tree" id="tree">
+            <div class="t-hd"><span>元素树（WBS）</span><span>筛选</span></div>
+            <div class="node active" data-wbs=""><span class="nm">全部项目</span><span class="amt">¥1,400万</span></div>
+            <div class="node n2" data-wbs="battery"><span class="nm">电池舱</span><span class="amt">¥12万</span></div>
+            <div class="node n3" data-wbs="battery.module"><span class="nm">模组</span><span class="amt">¥8万</span></div>
+            <div class="node n3" data-wbs="battery.fire"><span class="nm">消防</span><span class="amt red">¥4万</span></div>
+            <div class="node n2" data-wbs="pcs"><span class="nm">PCS</span><span class="amt">¥3万</span></div>
+            <div class="node n2" data-wbs="none"><span class="nm">未分配</span><span class="amt red">¥3万</span></div>
+            <div class="note">点节点 = 过滤右侧（含子节点）</div>
+          </aside>
+
+          <div>
+            <div id="a-overview">
+              <div class="kpis">
+                <div class="kpi"><div class="l">合同额</div><div class="v">¥1,200万</div><div class="d">含变更 +40万</div></div>
+                <div class="kpi"><div class="l">已确认收入</div><div class="v green">¥720万</div><div class="d">进度 60%</div></div>
+                <div class="kpi"><div class="l">已开票</div><div class="v">¥680万</div><div class="d">合同资产 40万</div></div>
+                <div class="kpi"><div class="l">已回款</div><div class="v green">¥540万</div><div class="d">回款率 79.4%</div></div>
+                <div class="kpi"><div class="l">未收</div><div class="v">¥140万</div><div class="d">应收余额</div></div>
+                <div class="kpi"><div class="l">逾期</div><div class="v red">¥30万</div><div class="d">1 笔 · 32 天</div></div>
+              </div>
+
+              <div class="todos">
+                <span class="t">待办</span>
+                <span class="chip">可开票 <b>2</b></span>
+                <span class="chip">待核销 <b>5</b></span>
+                <span class="chip danger">逾期 <b>1</b></span>
+                <span class="chip warn">对账待说明 <b>1</b></span>
+              </div>
+
+              <div class="card">
+                <div class="hd"><h3>最近单据</h3><div class="spacer"></div><span class="small">按时间倒序</span></div>
+                <div class="bd flush">
+                  <table data-table>
+                    <thead><tr><th>类型</th><th>单号</th><th>WBS</th><th class="num">金额</th><th>日期</th><th>状态</th></tr></thead>
+                    <tbody>
+                      <tr data-wbs="battery"><td>发票</td><td>INV-0205</td><td>电池舱</td><td class="num">600,000</td><td>2026-03-15</td><td><span class="tag">未到期</span></td></tr>
+                      <tr data-wbs="battery.fire"><td>发票</td><td>INV-0198</td><td>电池舱/消防</td><td class="num">2,400,000</td><td>2026-02-28</td><td><span class="tag no">逾期</span></td></tr>
+                      <tr data-wbs="pcs"><td>回款</td><td>RC-118</td><td>PCS</td><td class="num">3,000,000</td><td>2026-03-02</td><td><span class="tag ok">已核销</span></td></tr>
+                      <tr data-wbs="battery.module"><td>收入</td><td>REV-2026-02</td><td>电池舱/模组</td><td class="num">580,000</td><td>2026-02-28</td><td><span class="tag ok">已过账</span></td></tr>
+                      <tr data-wbs="none"><td>回款</td><td>RC-109</td><td>未分配</td><td class="num">300,000</td><td>2026-01-20</td><td><span class="tag warn">待归集</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div id="a-recon">
+              <div class="card">
+                <div class="hd"><h3>三账对账 · 2026-03</h3><div class="spacer"></div>
+                  <select class="btn sm" style="padding:4px 8px"><option>2026-03</option><option>2026-02</option></select>
+                </div>
+                <div class="bd">
+                  <div class="recon">
+                    <div class="b a"><div class="l">收入累计</div><div class="v">7,200,000</div></div>
+                    <div class="b b"><div class="l">开票累计</div><div class="v">6,800,000</div></div>
+                    <div class="b c"><div class="l">回款累计</div><div class="v">5,400,000</div></div>
+                  </div>
+
+                  <div class="diff">
+                    <div class="k">差异① 收入 − 开票 = <b>+400,000</b></div>
+                    <select id="reason"><option value="">选择原因…</option><option>已确认未开票</option><option>开票提前</option><option>红冲未同步</option><option>其他</option></select>
+                    <input id="reasonNote" placeholder="说明（必填）" />
+                    <span class="hint" id="reconHint">未说明，不能关账</span>
+                  </div>
+
+                  <div class="diff">
+                    <div class="k">差异② 开票 − 回款 = <b>+1,400,000</b></div>
+                    <span class="small">= 应收余额，按账龄拆分：未到期 110万 · 1–30 天 0 · 31–60 天 30万</span>
+                  </div>
+
+                  <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+                    <button class="btn primary" id="closeBtn" disabled onclick="alert('已关账（原型）')">关账</button>
+                    <button class="btn" onclick="alert('导出对账单（原型）')">导出对账单</button>
+                    <span class="small">关账后当期锁定，修改需反关账</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="hd"><h3>合同资产</h3></div>
+                <div class="bd">
+                  <p class="small" style="margin:0">收入 720万 − 开票 680万 = <b>40万</b>（已确认未开票）。开票后自动转入应收。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 收入 ============ -->
+      <section class="screen" id="s-revenue">
+        <h1 class="page-title">收入</h1>
+        <p class="page-sub">按 WBS 加权进度确认 · 合同 12,000,000 · 累计进度 65% · 已确认 7,200,000</p>
+        <div class="layout">
+          <aside class="tree" id="tree2">
+            <div class="t-hd"><span>元素树（WBS）</span><span>筛选</span></div>
+            <div class="node active" data-wbs=""><span class="nm">全部项目</span></div>
+            <div class="node n2" data-wbs="battery"><span class="nm">电池舱</span><span class="amt">100%</span></div>
+            <div class="node n3" data-wbs="battery.module"><span class="nm">模组</span><span class="amt">100%</span></div>
+            <div class="node n3" data-wbs="battery.fire"><span class="nm">消防</span><span class="amt">80%</span></div>
+            <div class="node n2" data-wbs="pcs"><span class="nm">PCS</span><span class="amt">50%</span></div>
+            <div class="node n2" data-wbs="none"><span class="nm">未分配</span></div>
+          </aside>
+          <div>
+            <div class="card">
+              <div class="hd"><h3>收入台账</h3><div class="spacer"></div>
+                <button class="btn sm">导出</button><button class="btn sm primary">+ 新增确认</button></div>
+              <div class="bd flush">
+                <table data-table>
+                  <thead><tr><th>期间</th><th class="num">计划</th><th class="num">确认</th><th class="num">差异</th><th>口径</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr data-wbs="battery"><td>2026-01</td><td class="num">600,000</td><td class="num">600,000</td><td class="num">0</td><td>节点</td><td><span class="tag ok">已过账</span></td><td><button class="btn sm">查看</button></td></tr>
+                    <tr data-wbs="battery.module"><td>2026-02</td><td class="num">600,000</td><td class="num">580,000</td><td class="num" style="color:#92400e">-20,000</td><td>节点</td><td><span class="tag ok">已过账</span></td><td><button class="btn sm">查看</button></td></tr>
+                    <tr data-wbs="battery.fire"><td>2026-03</td><td class="num">600,000</td><td class="num">—</td><td class="num">—</td><td>节点</td><td><span class="tag warn">待确认</span></td><td><button class="btn sm primary">确认</button></td></tr>
+                    <tr data-wbs="pcs"><td>2026-04</td><td class="num">600,000</td><td class="num">—</td><td class="num">—</td><td>节点</td><td><span class="tag gray">未开始</span></td><td><button class="btn sm" disabled>确认</button></td></tr>
+                    <tr data-wbs="none"><td>2026-02</td><td class="num">—</td><td class="num">120,000</td><td class="num">+120,000</td><td>完工%</td><td><span class="tag warn">待归集</span></td><td><button class="btn sm">查看</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="hd"><h3>本期快照（2026-03）</h3></div>
+              <div class="bd">
+                <p class="small" style="margin:0 0 6px">权重=预算成本；进度来源=任务状态 + 项目经理确认；关键节点未过封顶 90%。</p>
+                <table>
+                  <thead><tr><th>节点</th><th class="num">权重</th><th class="num">进度</th><th class="num">贡献</th></tr></thead>
+                  <tbody>
+                    <tr data-wbs="battery"><td>电池舱</td><td class="num">40%</td><td class="num">100%</td><td class="num">0.40</td></tr>
+                    <tr data-wbs="pcs"><td>PCS</td><td class="num">30%</td><td class="num">50%</td><td class="num">0.15</td></tr>
+                    <tr data-wbs="battery.fire"><td>消防</td><td class="num">20%</td><td class="num">0%</td><td class="num">0</td></tr>
+                    <tr><td>土建</td><td class="num">10%</td><td class="num">100%</td><td class="num">0.10</td></tr>
+                    <tr><td><b>合计 P</b></td><td class="num"></td><td class="num"></td><td class="num"><b>65%</b></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 开票 ============ -->
+      <section class="screen" id="s-invoices">
+        <h1 class="page-title">开票</h1>
+        <p class="page-sub">合同可开票额 12,000,000 · 已开票 6,800,000 · 待开票 2 笔（触发自收款条件）</p>
+        <div class="layout">
+          <aside class="tree" id="tree3">
+            <div class="t-hd"><span>元素树（WBS）</span><span>筛选</span></div>
+            <div class="node active" data-wbs=""><span class="nm">全部项目</span></div>
+            <div class="node n2" data-wbs="battery"><span class="nm">电池舱</span></div>
+            <div class="node n3" data-wbs="battery.fire"><span class="nm">消防</span></div>
+            <div class="node n2" data-wbs="pcs"><span class="nm">PCS</span></div>
+            <div class="node n2" data-wbs="none"><span class="nm">未分配</span></div>
+          </aside>
+          <div>
+            <div class="todos">
+              <span class="chip warn">可开票 · 验收款 <b>¥3,600,000</b>（电池舱节点已完成）</span>
+              <span class="chip">可开票 · 到货款 <b>¥1,200,000</b></span>
+            </div>
+            <div class="card">
+              <div class="hd"><h3>开票申请</h3><div class="spacer"></div><button class="btn sm primary">+ 开票申请</button></div>
+              <div class="bd flush">
+                <table data-table>
+                  <thead><tr><th>申请号</th><th>依据</th><th>WBS</th><th class="num">金额</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr data-wbs="battery"><td>IR-0231</td><td>验收款 30%</td><td>电池舱</td><td class="num">3,600,000</td><td><span class="tag warn">待开票</span></td><td><button class="btn sm">登记发票</button></td></tr>
+                    <tr data-wbs="pcs"><td>IR-0230</td><td>到货款 10%</td><td>PCS</td><td class="num">1,200,000</td><td><span class="tag warn">待开票</span></td><td><button class="btn sm">登记发票</button></td></tr>
+                    <tr data-wbs="battery.fire"><td>INV-0198</td><td>验收款 20%</td><td>消防</td><td class="num">2,400,000</td><td><span class="tag no">逾期</span></td><td><button class="btn sm">查看</button></td></tr>
+                    <tr data-wbs="battery.module"><td>INV-0205</td><td>到货款 5%</td><td>模组</td><td class="num">600,000</td><td><span class="tag">未到期</span></td><td><button class="btn sm">查看</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="hd"><h3>收款条件（触发器）</h3></div>
+              <div class="bd">
+                <table>
+                  <thead><tr><th>节点</th><th class="num">比例</th><th>触发方式</th><th>触发引用</th><th>状态</th></tr></thead>
+                  <tbody>
+                    <tr><td>预付款</td><td class="num">20%</td><td>日期</td><td>合同生效 +30 天</td><td><span class="tag ok">已开票</span></td></tr>
+                    <tr data-wbs="battery"><td>到货款</td><td class="num">40%</td><td>WBS 节点</td><td>电池舱 · 到场签收</td><td><span class="tag ok">已触发</span></td></tr>
+                    <tr data-wbs="battery"><td>验收款</td><td class="num">30%</td><td>WBS 节点</td><td>电池舱 · 并网验收</td><td><span class="tag warn">已触发</span></td></tr>
+                    <tr><td>质保金</td><td class="num">10%</td><td>日期</td><td>质保期满</td><td><span class="tag gray">未触发</span></td></tr>
+                  </tbody>
+                </table>
+                <p class="small" style="margin:8px 0 0">触发只生成「可开票」待办，不自动开票；节点回退会撤销未处理待办，已开票走红冲。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 回款 ============ -->
+      <section class="screen" id="s-receipts">
+        <h1 class="page-title">回款</h1>
+        <p class="page-sub">已收 5,400,000 · 应收余额 1,400,000 · 逾期 300,000（1 笔 32 天）</p>
+        <div class="layout">
+          <aside class="tree" id="tree4">
+            <div class="t-hd"><span>元素树（WBS）</span><span>筛选</span></div>
+            <div class="node active" data-wbs=""><span class="nm">全部项目</span><span class="amt">¥140万</span></div>
+            <div class="node n2" data-wbs="battery"><span class="nm">电池舱</span><span class="amt">¥12万</span></div>
+            <div class="node n3" data-wbs="battery.fire"><span class="nm">消防</span><span class="amt red">¥4万</span></div>
+            <div class="node n2" data-wbs="pcs"><span class="nm">PCS</span><span class="amt">¥3万</span></div>
+            <div class="node n2" data-wbs="none"><span class="nm">未分配</span><span class="amt red">¥3万</span></div>
+          </aside>
+          <div>
+            <div class="card">
+              <div class="hd"><h3>回款登记与核销</h3><div class="spacer"></div><button class="btn sm primary">+ 回款登记</button></div>
+              <div class="bd flush">
+                <table data-table>
+                  <thead><tr><th>回款号</th><th>客户</th><th class="num">金额</th><th>到账日</th><th>方式</th><th class="num">已核销</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr data-wbs="pcs"><td>RC-118</td><td>业主A</td><td class="num">3,000,000</td><td>2026-03-02</td><td>电汇</td><td class="num">3,000,000</td><td><button class="btn sm">查看</button></td></tr>
+                    <tr data-wbs="battery"><td>RC-117</td><td>业主A</td><td class="num">1,200,000</td><td>2026-02-20</td><td>电汇</td><td class="num">1,200,000</td><td><button class="btn sm">查看</button></td></tr>
+                    <tr data-wbs="battery"><td>RC-116</td><td>业主A</td><td class="num">600,000</td><td>2026-02-10</td><td>商票</td><td class="num">0</td><td><button class="btn sm primary">核销</button></td></tr>
+                    <tr data-wbs="none"><td>RC-109</td><td>业主A</td><td class="num">300,000</td><td>2026-01-20</td><td>电汇</td><td class="num">0</td><td><button class="btn sm primary">核销</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="hd"><h3>建议核销 · RC-116（600,000）</h3><div class="spacer"></div><span class="small">人工确认后落库</span></div>
+              <div class="bd">
+                <table>
+                  <thead><tr><th style="width:30px"></th><th>发票</th><th class="num">金额</th><th>到期日</th><th>说明</th></tr></thead>
+                  <tbody>
+                    <tr><td><input type="checkbox" checked /></td><td>INV-0198</td><td class="num">2,400,000</td><td>2026-02-28</td><td><span class="tag no">逾期</span> 部分核销</td></tr>
+                    <tr><td><input type="checkbox" /></td><td>INV-0205</td><td class="num">600,000</td><td>2026-03-15</td><td><span class="tag">未到期</span> 等额优先</td></tr>
+                  </tbody>
+                </table>
+                <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+                  <button class="btn primary" onclick="alert('已核销（原型）')">确认核销</button>
+                  <span class="small">合计 600,000 / 回款余额 600,000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-other">
+        <h1 class="page-title">其他页面</h1>
+        <p class="page-sub">原型只覆盖资金相关页面；概览/计划/排程/成本/时间沿用 Carbon 现有页面。</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="proto">原型 · 点击左侧菜单切换</div>
+
+<script>
+  const screens = { finance:'s-finance', revenue:'s-revenue', invoices:'s-invoices', receipts:'s-receipts' };
+  const titles = { finance:'资金', revenue:'收入', invoices:'开票', receipts:'回款' };
+
+  function show(name){
+    if (location.hash.slice(1) !== name) history.replaceState(null,'','#'+name);
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+    const id = screens[name] || 's-other';
+    document.getElementById(id).classList.add('on');
+    document.getElementById('crumb').textContent = titles[name] || '—';
+    document.querySelectorAll('.nav a[data-nav]').forEach(a=>{
+      a.classList.toggle('active', a.getAttribute('data-nav')===name);
+    });
+    window.scrollTo({top:0});
+  }
+  document.querySelectorAll('.nav a[data-nav]').forEach(a=>{
+    a.addEventListener('click', e=>{ e.preventDefault(); show(a.getAttribute('data-nav')); });
+  });
+
+  /* deep link: #revenue / #invoices / #receipts */
+  (function(){
+    const h = location.hash.slice(1);
+    if (h && screens[h]) show(h);
+  })();
+
+  /* tree filter: filter every table inside the current screen */
+  document.querySelectorAll('.tree').forEach(tree=>{
+    tree.querySelectorAll('.node').forEach(node=>{
+      node.addEventListener('click', ()=>{
+        tree.querySelectorAll('.node').forEach(n=>n.classList.remove('active'));
+        node.classList.add('active');
+        const wbs = node.getAttribute('data-wbs') || '';
+        const screen = node.closest('.screen');
+        screen.querySelectorAll('table[data-table] tbody tr').forEach(tr=>{
+          const rowWbs = tr.getAttribute('data-wbs') || '';
+          const hit = wbs === '' || rowWbs === wbs || rowWbs.startsWith(wbs + '.');
+          tr.classList.toggle('hidden', !hit);
+        });
+      });
+    });
+  });
+
+  /* anchors on the parent page */
+  document.querySelectorAll('.anchorbar button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.anchorbar button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      const el = document.getElementById(b.getAttribute('data-anchor'));
+      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+
+  /* reconciliation: reason + note enable the close button */
+  const reason = document.getElementById('reason');
+  const note = document.getElementById('reasonNote');
+  const closeBtn = document.getElementById('closeBtn');
+  const hint = document.getElementById('reconHint');
+  function checkRecon(){
+    const ok = reason.value !== '' && note.value.trim().length > 0;
+    closeBtn.disabled = !ok;
+    hint.textContent = ok ? '可以关账' : '未说明，不能关账';
+    hint.style.color = ok ? '#0b5449' : '#9f1239';
+  }
+  reason.addEventListener('change', checkRecon);
+  note.addEventListener('input', checkRecon);
+</script>
+</body>
+</html>

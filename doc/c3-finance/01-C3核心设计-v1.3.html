@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C3 资金中枢 · 核心设计 v1.3</title>
+<style>
+  :root{
+    --ink:#111827; --ink2:#374151; --muted:#6b7280; --line:#e5e7eb; --line2:#d1d5db;
+    --bg:#fff; --panel:#f8fafc; --panel2:#f1f5f9;
+    --accent:#0f6b5c; --accent2:#0b5449; --accent-soft:#ecf7f4;
+    --blue:#3b4ea0; --blue-soft:#f4f6ff; --blue-line:#c7cff0;
+    --warn:#92400e; --warn-soft:#fffbeb; --warn-line:#fcd34d;
+    --danger:#9f1239; --danger-soft:#fff1f2;
+    --r:10px; --r-sm:6px;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.78;-webkit-font-smoothing:antialiased}
+  .shell{display:grid;grid-template-columns:250px minmax(0,1fr)}
+  nav.toc{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:26px 16px 40px}
+  nav.toc .brand{font-weight:700;font-size:14px;color:var(--accent2)}
+  nav.toc .brand small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:3px}
+  nav.toc ol{list-style:none;margin:16px 0 0;padding:0}
+  nav.toc a{display:block;padding:6px 10px;margin:1px 0;border-radius:var(--r-sm);color:var(--ink2);text-decoration:none;font-size:13.5px;border-left:2px solid transparent}
+  nav.toc a:hover{background:#eef2f5;color:var(--ink)}
+  nav.toc a.active{background:var(--accent-soft);color:var(--accent2);border-left-color:var(--accent);font-weight:600}
+  nav.toc .foot{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.6}
+  main{padding:52px 52px 110px;max-width:1080px}
+  .cover{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:30px}
+  .kicker{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .cover h1{font-size:34px;line-height:1.28;margin:12px 0 10px;letter-spacing:-.01em;font-weight:800}
+  .cover .sub{font-size:16px;color:var(--ink2);margin:0;max-width:760px}
+  .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}
+  .meta div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 13px}
+  .meta dt{font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 2px}
+  .meta dd{margin:0;font-size:13px;font-weight:600}
+  h2{font-size:23px;margin:52px 0 6px;font-weight:800;scroll-margin-top:20px}
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:9px;font-size:18px}
+  h3{font-size:17px;margin:26px 0 8px;font-weight:700;scroll-margin-top:20px}
+  p{margin:9px 0}
+  .lede{color:var(--ink2);font-size:15.5px;max-width:820px}
+  ul,ol{padding-left:20px;margin:9px 0}
+  li{margin:4px 0}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);padding:1.5px 5px;border-radius:4px;color:#0b3b34}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:var(--r);overflow:auto;font-size:12.3px;line-height:1.6}
+  pre code{background:none;color:inherit;padding:0}
+  .callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:var(--r-sm);padding:13px 16px;margin:16px 0}
+  .callout .t{font-weight:700;font-size:13px;color:var(--accent2);margin-bottom:3px}
+  .callout.warn{border-left-color:var(--warn-line);background:var(--warn-soft)}
+  .callout.warn .t{color:var(--warn)}
+  .tw{overflow:auto;margin:14px 0;border:1px solid var(--line);border-radius:var(--r)}
+  table{border-collapse:collapse;width:100%;font-size:13.4px;background:#fff}
+  caption{caption-side:top;text-align:left;font-size:12.3px;color:var(--muted);padding:9px 13px 7px;border-bottom:1px solid var(--line);background:var(--panel)}
+  th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--panel2);font-size:12.3px;color:var(--ink2);font-weight:700;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:#fcfcfd}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2);background:#fff;white-space:nowrap}
+  .tag.ok{border-color:#a7ded2;background:#effaf6;color:#0b5449}
+  .tag.mid{border-color:#fcd34d;background:#fffbeb;color:#92400e}
+  .tag.no{border-color:#fda4af;background:#fff1f2;color:#9f1239}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:#fff}
+  .card h4{margin:0 0 5px;font-size:14.5px}
+  .card p{margin:0;font-size:12.8px;color:var(--ink2)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin:16px 0}
+  .kpi{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;background:#fff}
+  .kpi .v{font-size:23px;font-weight:800;color:var(--accent2);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .kpi .l{font-size:12.3px;color:var(--muted);margin-top:1px}
+  figure{margin:18px 0;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:16px 14px 12px}
+  figure svg{display:block;width:100%;height:auto}
+  figcaption{font-size:12.3px;color:var(--muted);margin-top:10px;padding-top:9px;border-top:1px dashed var(--line2)}
+  .wire{border:1px solid var(--line);border-radius:var(--r);background:#fff;margin:14px 0;overflow:hidden}
+  .wire .bar{background:var(--panel2);border-bottom:1px solid var(--line);padding:8px 12px;font-size:12.3px;color:var(--ink2);font-weight:600}
+  .wire pre{background:#fff;color:var(--ink2);margin:0;border-radius:0;font-size:12px;line-height:1.55;padding:14px 16px}
+  .small{font-size:12.6px;color:var(--muted)}
+  footer.doc-foot{margin-top:70px;padding-top:20px;border-top:1px solid var(--line);font-size:12.3px;color:var(--muted);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  figure svg text[font-size="10.5"]{font-size:13.5px}
+  figure svg text[font-size="11"]{font-size:14px}
+  figure svg text[font-size="11.5"]{font-size:14.5px}
+  figure svg text[font-size="12"]{font-size:15px}
+  figure svg text[font-size="12.5"]{font-size:15.5px}
+  figure svg text[font-size="13"]{font-size:16px}
+  figure svg text[font-size="13.5"]{font-size:16.5px}
+  figure svg text[font-size="14"]{font-size:17px}
+  figure svg text[font-size="16"]{font-size:19px}
+  figure svg text[font-size="22"]{font-size:27px}
+  @media (max-width:1040px){
+    .shell{grid-template-columns:1fr}
+    nav.toc{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);padding:16px}
+    nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+    main{padding:30px 20px 70px}
+    .cover h1{font-size:26px}
+    .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media print{
+    @page{size:A4;margin:16mm 14mm}
+    body{font-size:10.5pt;line-height:1.6}
+    .shell{display:block}
+    nav.toc{display:none}
+    main{padding:0;max-width:none}
+    h2{font-size:15pt;page-break-after:avoid}
+    h3{font-size:12pt;page-break-after:avoid}
+    figure,table,.callout,.wire{page-break-inside:avoid}
+    .tw{overflow:visible}
+    pre{background:#f8fafc;color:#111827;border:1px solid #d1d5db}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="toc" aria-label="目录">
+  <div class="brand">C3 资金中枢<small>核心设计 v1.3 · 收入 / 发票 / 回款</small></div>
+  <ol>
+    <li><a href="#s1">1 三个对象</a></li>
+    <li><a href="#s2">2 三条设计原则</a></li>
+    <li><a href="#s3">3 对象模型</a></li>
+    <li><a href="#s4">4 页面：父页 + 子项</a></li>
+    <li><a href="#s5">5 状态机</a></li>
+    <li><a href="#s6">6 关键算法</a></li>
+    <li><a href="#s7">7 数据模型</a></li>
+    <li><a href="#s8">8 接口与权限</a></li>
+    <li><a href="#s9">9 交付排期</a></li>
+    <li><a href="#s10">10 待确认</a></li>
+  </ol>
+  <div class="foot">对应《C3 详细设计 v1.3》<br />本页只保留核心设计，完整字段与接口见文档</div>
+</nav>
+<main>
+<header class="cover">
+  <div class="kicker">Design Doc · C3</div>
+  <h1>资金中枢 · 核心设计</h1>
+  <p class="sub">只管三件事：收入该确认多少、发票该开多少、回款收了多少。三者解耦，但必须能对账。</p>
+  <div class="callout">
+  <div class="t">UI 原型</div>
+  <p>可交互原型见同目录 <code>C3资金中枢-UI原型.html</code>：左侧二级菜单（资金 → 收入/开票/回款）、左树过滤、父页总览与对账、回款核销。</p>
+</div>
+
+<dl class="meta">
+    <div><dt>版本</dt><dd>v1.3</dd></div>
+    <div><dt>日期</dt><dd>2026-11-18</dd></div>
+    <div><dt>范围</dt><dd>收入 · 发票 · 回款</dd></div>
+    <div><dt>状态</dt><dd>待评审</dd></div>
+  </dl>
+</header>
+
+<h2 id="s1"><span class="num">01</span>三个对象，一条对账线</h2>
+<p class="lede">资金中枢不是“财务系统”，而是项目维度的一条“权责—纳税—现金”链。三个对象各自成立，又必须能互相对上。</p>
+
+<figure>
+<svg viewBox="0 0 1200 560" role="img" aria-label="三个对象与对账线">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect width="1200" height="560" fill="#ffffff"/>
+  <text x="30" y="40" font-family="'PingFang SC',sans-serif" font-size="16" font-weight="700" fill="#111827">合同额 12,000,000</text>
+  <text x="30" y="64" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">从一份合同拆成三本账，任何时点都允许有差异，但差异必须有原因</text>
+
+  <rect x="30" y="100" width="340" height="150" rx="10" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="50" y="130" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#0b5449">收入</text>
+  <text x="50" y="156" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">权责发生：该确认多少</text>
+  <text x="50" y="180" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">节点法 / 完工百分比</text>
+  <text x="50" y="212" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#0b5449">7,200,000</text>
+  <text x="50" y="234" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">已确认 60%</text>
+
+  <rect x="430" y="100" width="340" height="150" rx="10" fill="#f4f6ff" stroke="#c7cff0"/>
+  <text x="450" y="130" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#3b4ea0">发票</text>
+  <text x="450" y="156" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">纳税义务：该开多少</text>
+  <text x="450" y="180" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">开票申请 → 登记 → 红冲</text>
+  <text x="450" y="212" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#3b4ea0">6,800,000</text>
+  <text x="450" y="234" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">已开票</text>
+
+  <rect x="830" y="100" width="340" height="150" rx="10" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="850" y="130" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#9f1239">回款</text>
+  <text x="850" y="156" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">现金流入：收了多少</text>
+  <text x="850" y="180" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">登记 → 核销 → 账龄 → 催收</text>
+  <text x="850" y="212" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#9f1239">5,400,000</text>
+  <text x="850" y="234" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">已到账</text>
+
+  <path d="M370,175 L426,175" stroke="#94a3b8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+  <path d="M770,175 L826,175" stroke="#94a3b8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+
+  <rect x="30" y="290" width="1140" height="96" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="50" y="318" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">差异① 收入 − 开票 = +400,000</text>
+  <text x="50" y="342" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">已确认未开票（合规常见）· 开票提前 · 红冲未同步 —— 必须选原因并说明，否则不能关账</text>
+  <text x="620" y="318" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">差异② 开票 − 回款 = +1,400,000</text>
+  <text x="620" y="342" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">= 应收余额，按账龄拆分（未到期 / 1–30 / 31–60 / 61–90 / 90+）</text>
+
+  <rect x="30" y="416" width="1140" height="104" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-dasharray="6 4"/>
+  <text x="50" y="444" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#0b5449">三个“不等于”是设计前提</text>
+  <text x="50" y="468" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">收入 ≠ 开票（税会差异，允许）｜开票 ≠ 回款（信用风险，要跟）｜收入 ≠ 回款（现金流，参考）</text>
+  <text x="50" y="492" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">把开票当收入的系统，最后一定算不清应收；把回款当收入的系统，最后一定算不清利润。</text>
+</svg>
+<figcaption>图 1　三个对象各自成立、又必须能对上的“三账”关系。</figcaption>
+</figure>
+
+<h2 id="s2"><span class="num">02</span>三条设计原则</h2>
+<div class="cards">
+  <div class="card"><h4>① 解耦但对账</h4><p>收入、发票、回款是三个独立对象与台账，不做“开票即收入”；差异用对账视图管理，不靠人工台账抹平。</p></div>
+  <div class="card"><h4>② 应收不落库</h4><p>应收 = 发票 − 已核销，用视图计算，避免“发票改了应收没改”的双写问题；账龄按月快照防漂移。</p></div>
+  <div class="card"><h4>③ 自动匹配只做建议</h4><p>核销是资金动作，错了要人担责：系统给建议（等额优先、到期日 FIFO），人工确认才落库。</p></div>
+</div>
+
+<h2 id="s3"><span class="num">03</span>对象模型</h2>
+<div class="tw">
+<table>
+  <caption>表 1　三个对象的关键字段与动作</caption>
+  <thead><tr><th style="width:10%">对象</th><th style="width:30%">关键字段</th><th style="width:32%">动作</th><th>关键约束</th></tr></thead>
+  <tbody>
+    <tr><td><b>收入</b></td><td>期间、金额、口径（节点/完工%）、进度、依据</td><td>计划 → 确认 → 审批 → 过账 / 红冲</td><td>确认额 ≤ 剩余可确认；超计划需说明</td></tr>
+    <tr><td><b>发票</b></td><td>发票号、金额、税额、开票日、到期日、SAP 号</td><td>申请 → 登记 → 核销 / 红冲</td><td>发票号唯一；累计 ≤ 合同可开票额</td></tr>
+    <tr><td><b>回款</b></td><td>客户、金额、币种、到账日、方式（电汇/商票/保函/信用证）</td><td>登记 → 核销 → 对账</td><td>核销 ≤ 发票未收额；票据标“待兑付”</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.1 页面导航</h3>
+<pre><code>概览
+计划
+排程
+成本
+ ├─ 库存
+ ├─ 配对
+ └─ 账单
+资金                 ← 父页：总览 + 三账对账
+ ├─ 收入             ← 子项
+ ├─ 开票             ← 子项
+ └─ 回款             ← 子项
+时间
+
+路由：
+/x/project/:id/finance            ← 总览 + 对账
+/x/project/:id/finance/revenue    ← 收入
+/x/project/:id/finance/invoices   ← 开票
+/x/project/:id/finance/receipts   ← 回款</code></pre>
+
+<h2 id="s4"><span class="num">04</span>页面设计：父页 + 三个子项</h2>
+
+<h3>4.1 子项 · 收入</h3>
+<div class="wire">
+  <div class="bar">BESS-01 · 合同额 12,000,000 · 已确认 7,200,000（60%）　[按年▾] [口径▾] [导出] [+ 新增确认]</div>
+  <pre><code>期间      计划        确认        差异       口径    状态      操作
+2026-01   600,000     600,000     0          节点    已过账    查看
+2026-02   600,000     580,000     -20,000    节点    已过账    查看
+2026-03   600,000     —           —          节点    待确认    确认
+2026-04   600,000     —           —          节点    待确认    确认</code></pre>
+</div>
+<ul class="small">
+  <li>差异列负值标黄并提示“需说明”；已过账行只读，红冲需审批；</li>
+  <li>空态：“还没有收入计划，先到「收入计划」按合同节点生成”。</li>
+</ul>
+
+<h3>4.2 子项 · 回款核销</h3>
+<div class="wire">
+  <div class="bar">回款 RC-118 · 业主A · 3,000,000（余额 600,000）· 2026-03-02 · 电汇</div>
+  <pre><code>建议核销（同客户 + 未结清 + 金额/到期日优先）
+ [x] INV-0198   2,400,000   到期 2026-02-28   精确匹配
+ [ ] INV-0205     600,000   到期 2026-03-15   部分核销
+────────────────────────────────────────────────
+[全部核销]  [按建议核销]  [手工调整]      合计 3,000,000 / 余额 0</code></pre>
+</div>
+<div class="callout">
+  <div class="t">为什么不让系统自动核销</div>
+  <p>核销决定了“哪笔应收被清偿”，错了就是财务责任。系统只做候选排序与金额校验，落库前必须有人确认；差异 &gt; 0.01 强制填原因。</p>
+</div>
+
+<h3>4.3 父页 · 总览与三账对账</h3>
+<div class="wire">
+  <div class="bar">BESS-01 · 2026-03 · 收入 7,200,000 ｜ 开票 6,800,000 ｜ 回款 5,400,000</div>
+  <pre><code>差异① 收入 − 开票 = +400,000   原因：[已确认未开票 ▾]  说明：2 月验收款未开票
+差异② 开票 − 回款 = +1,400,000   = 应收余额（逾期 300,000 / 90+ 0）
+────────────────────────────────────────────────
+[填写说明]  [导出对账单]  [关账]   ← 差异①无说明时“关账”置灰</code></pre>
+</div>
+
+<h2 id="s5"><span class="num">05</span>状态机</h2>
+<figure>
+<svg viewBox="0 0 1200 470" role="img" aria-label="三个对象的状态机">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect width="1200" height="470" fill="#ffffff"/>
+  <text x="30" y="36" font-family="'PingFang SC',sans-serif" font-size="16" font-weight="700" fill="#111827">状态机（三条，互不嵌套）</text>
+
+  <text x="30" y="82" font-family="'PingFang SC',sans-serif" font-size="12" font-weight="700" fill="#0b5449">收入</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="11">
+    <rect x="90" y="64" width="110" height="34" rx="17" fill="#ecf7f4" stroke="#8dcdbf"/><text x="145" y="86" text-anchor="middle" fill="#111827">Draft</text>
+    <rect x="250" y="64" width="120" height="34" rx="17" fill="#ecf7f4" stroke="#8dcdbf"/><text x="310" y="86" text-anchor="middle" fill="#111827">Submitted</text>
+    <rect x="420" y="64" width="120" height="34" rx="17" fill="#ecf7f4" stroke="#8dcdbf"/><text x="480" y="86" text-anchor="middle" fill="#111827">Approved</text>
+    <rect x="590" y="64" width="100" height="34" rx="17" fill="#ecf7f4" stroke="#8dcdbf"/><text x="640" y="86" text-anchor="middle" fill="#111827">Posted</text>
+    <rect x="740" y="64" width="120" height="34" rx="17" fill="#fff1f2" stroke="#fda4af"/><text x="800" y="86" text-anchor="middle" fill="#9f1239">Reversed</text>
+    <path d="M200,81 L246,81" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M370,81 L416,81" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M540,81 L586,81" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M690,81 L736,81" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  </g>
+
+  <text x="30" y="176" font-family="'PingFang SC',sans-serif" font-size="12" font-weight="700" fill="#3b4ea0">发票</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="11">
+    <rect x="90" y="158" width="100" height="34" rx="17" fill="#f4f6ff" stroke="#c7cff0"/><text x="140" y="180" text-anchor="middle" fill="#111827">Draft</text>
+    <rect x="240" y="158" width="110" height="34" rx="17" fill="#f4f6ff" stroke="#c7cff0"/><text x="295" y="180" text-anchor="middle" fill="#111827">Issued</text>
+    <rect x="400" y="158" width="140" height="34" rx="17" fill="#f4f6ff" stroke="#c7cff0"/><text x="470" y="180" text-anchor="middle" fill="#111827">PartiallyPaid</text>
+    <rect x="590" y="158" width="100" height="34" rx="17" fill="#f4f6ff" stroke="#c7cff0"/><text x="640" y="180" text-anchor="middle" fill="#111827">Paid</text>
+    <rect x="740" y="158" width="110" height="34" rx="17" fill="#fff1f2" stroke="#fda4af"/><text x="795" y="180" text-anchor="middle" fill="#9f1239">Voided</text>
+    <path d="M190,175 L236,175" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M350,175 L396,175" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M540,175 L586,175" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M690,175 L736,175" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  </g>
+
+  <text x="30" y="270" font-family="'PingFang SC',sans-serif" font-size="12" font-weight="700" fill="#9f1239">回款</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="11">
+    <rect x="90" y="252" width="100" height="34" rx="17" fill="#fff1f2" stroke="#fda4af"/><text x="140" y="274" text-anchor="middle" fill="#111827">Draft</text>
+    <rect x="240" y="252" width="130" height="34" rx="17" fill="#fff1f2" stroke="#fda4af"/><text x="305" y="274" text-anchor="middle" fill="#111827">Confirmed</text>
+    <rect x="420" y="252" width="130" height="34" rx="17" fill="#fff1f2" stroke="#fda4af"/><text x="485" y="274" text-anchor="middle" fill="#111827">Allocated</text>
+    <rect x="600" y="252" width="100" height="34" rx="17" fill="#fff1f2" stroke="#fda4af"/><text x="650" y="274" text-anchor="middle" fill="#111827">Closed</text>
+    <path d="M190,269 L236,269" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M370,269 L416,269" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M550,269 L596,269" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  </g>
+
+  <rect x="30" y="330" width="1140" height="104" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="50" y="358" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">三条守卫规则</text>
+  <text x="50" y="382" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">① 收入过账前必须“期间未关账”；关账后修改要反关账（审批）。</text>
+  <text x="50" y="404" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">② 发票红冲前必须先处理已核销金额（先冲核销，再红冲），否则应收为负。</text>
+  <text x="50" y="426" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">③ 回款核销必须锁行 + 二次校验余额，防并发重复核销。</text>
+</svg>
+<figcaption>图 2　收入、发票、回款三条状态机；守卫规则决定“能不能过”。</figcaption>
+</figure>
+
+<h2 id="s6"><span class="num">06</span>关键算法</h2>
+<h3>6.1 收入确认</h3>
+<pre><code>remaining = 合同额 + 已批变更 - 累计已确认
+if 口径 == 节点:
+    cap = min(节点计划额, remaining)
+    校验 0 &lt; 本次确认 &lt;= cap
+else:  // 完工百分比
+    target = 合同额 × 进度%
+    amount = target - 累计已确认        // 可能为负
+    if amount &lt; 0: 必须审批（收入回退）
+累计已确认 += amount</code></pre>
+
+<h3>6.2 账龄（自然日）</h3>
+<pre><code>days = 今天 - 发票.到期日
+bucket = days &lt;= 0 ? 未到期
+       : days &lt;= 30 ? 1-30
+       : days &lt;= 60 ? 31-60
+       : days &lt;= 90 ? 61-90 : 90+
+每月末快照一次，历史账龄不随日期漂移</code></pre>
+
+<h3>6.3 自动核销建议</h3>
+<pre><code>候选 = 同客户 且 未结清 的发票
+if 回款附言含发票号: 精确匹配
+else: 按 |金额-余额| 升序、到期日升序 → 等额优先，否则 FIFO 部分核销
+输出建议 → 人工确认 → 落库（锁行 + 余额二次校验）</code></pre>
+
+<h3>6.4 逾期升级</h3>
+<pre><code>L1 到期+1  → 项目经理 / 财务应收：标记逾期
+L2 +7      → 板块负责人：待办催收
+L3 +30     → 财务负责人 + 管理层：要求回款计划
+L4 +90     → 进入催收台账
+幂等键 (invoiceId, level)，每日批跑，不重复通知</code></pre>
+
+<h2 id="s7"><span class="num">07</span>数据模型</h2>
+<figure>
+<svg viewBox="0 0 1200 420" role="img" aria-label="数据模型">
+  <rect width="1200" height="420" fill="#ffffff"/>
+  <text x="30" y="34" font-family="'PingFang SC',sans-serif" font-size="16" font-weight="700" fill="#111827">9 张表 + 1 个视图</text>
+
+  <g font-family="'PingFang SC',sans-serif" font-size="10.5">
+    <rect x="40" y="70" width="200" height="86" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="56" y="96" font-size="12" font-weight="700" fill="#111827">revenue_plan</text>
+    <text x="56" y="118" fill="#374151">节点 / 金额 / 日期</text>
+    <text x="56" y="138" fill="#6b7280">口径：节点 / 完工%</text>
+
+    <rect x="40" y="186" width="200" height="86" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="56" y="212" font-size="12" font-weight="700" fill="#111827">revenue_entry</text>
+    <text x="56" y="234" fill="#374151">期间 / 金额 / 状态</text>
+    <text x="56" y="254" fill="#6b7280">审批、过账、红冲</text>
+
+    <rect x="300" y="70" width="200" height="86" rx="8" fill="#f4f6ff" stroke="#c7cff0"/>
+    <text x="316" y="96" font-size="12" font-weight="700" fill="#111827">invoice_request</text>
+    <text x="316" y="118" fill="#374151">依据 / 金额 / 附件</text>
+    <text x="316" y="138" fill="#6b7280">审批后待开票</text>
+
+    <rect x="300" y="186" width="200" height="86" rx="8" fill="#f4f6ff" stroke="#c7cff0"/>
+    <text x="316" y="212" font-size="12" font-weight="700" fill="#111827">invoice</text>
+    <text x="316" y="234" fill="#374151">号 / 金额 / 到期日</text>
+    <text x="316" y="254" fill="#6b7280">SAP 号唯一映射</text>
+
+    <rect x="560" y="70" width="200" height="86" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="576" y="96" font-size="12" font-weight="700" fill="#111827">receipt</text>
+    <text x="576" y="118" fill="#374151">客户 / 金额 / 到账日</text>
+    <text x="576" y="138" fill="#6b7280">方式：电汇/商票/保函</text>
+
+    <rect x="560" y="186" width="200" height="86" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="576" y="212" font-size="12" font-weight="700" fill="#111827">allocation</text>
+    <text x="576" y="234" fill="#374151">回款 ↔ 发票</text>
+    <text x="576" y="254" fill="#6b7280">唯一约束 (回款, 发票)</text>
+
+    <rect x="820" y="70" width="200" height="86" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+    <text x="836" y="96" font-size="12" font-weight="700" fill="#111827">dunning_log</text>
+    <text x="836" y="118" fill="#374151">催收动作 / 承诺日</text>
+    <text x="836" y="138" fill="#6b7280">按级别留痕</text>
+
+    <rect x="820" y="186" width="200" height="86" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+    <text x="836" y="212" font-size="12" font-weight="700" fill="#111827">v_receivable</text>
+    <text x="836" y="234" fill="#374151">发票 − 已核销</text>
+    <text x="836" y="254" fill="#9f1239">视图，不落库</text>
+
+    <path d="M240,228 L296,228" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M500,120 L556,120" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M500,228 L556,228" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+    <path d="M760,228 L816,228" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar2)"/>
+  </g>
+
+  <rect x="40" y="320" width="1140" height="70" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="56" y="346" font-family="'PingFang SC',sans-serif" font-size="11.5" font-weight="700" fill="#111827">设计要点</text>
+  <text x="56" y="370" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">应收用视图计算（不落库）· 账龄月末快照 · allocation 唯一约束防重复核销 · 金额 decimal(18,2) · 发票号 / SAP 号唯一</text>
+</svg>
+<figcaption>图 3　三本账的数据结构：两张收入表、两张发票表、两张回款表 + 催收与视图。</figcaption>
+</figure>
+
+<h2 id="s8"><span class="num">08</span>接口与权限</h2>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:12%">编号</th><th style="width:14%">方向</th><th style="width:40%">内容</th><th>幂等键</th></tr></thead>
+  <tbody>
+    <tr><td>I-F1</td><td>SAP → PLP</td><td>销项发票（号/金额/税额/到期日）</td><td>sapInvoiceNo</td></tr>
+    <tr><td>I-F2</td><td>SAP → PLP</td><td>收款凭证（客户/金额/到账日）</td><td>sapDocNo</td></tr>
+    <tr><td>I-F6</td><td>PLP ↔ OA</td><td>收入确认 / 红冲审批</td><td>id + version</td></tr>
+    <tr><td>I-F8</td><td>S3/S4 → PLP</td><td>签收 / 验收事件（开票依据）</td><td>docId</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">接口纪律：幂等键、失败重试与死信、日对账、SAP 不可用降级只读、correlationId 贯穿。</p>
+
+<div class="tw">
+<table>
+  <caption>表 2　权限（R 读 / W 写 / A 审批 / — 不可见）</caption>
+  <thead><tr><th style="width:22%">功能</th><th>项目经理</th><th>财务应收</th><th>财务负责人</th><th>经营计划</th></tr></thead>
+  <tbody>
+    <tr><td>收入计划 / 确认</td><td>W / R</td><td>R / W</td><td>A</td><td>R</td></tr>
+    <tr><td>开票申请 / 登记</td><td>W / —</td><td>R / W</td><td>A</td><td>R</td></tr>
+    <tr><td>回款登记 / 核销</td><td>R / —</td><td>W / W</td><td>—</td><td>R</td></tr>
+    <tr><td>三账对账 / 关账</td><td>R</td><td>W</td><td>A</td><td>R</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="s9"><span class="num">09</span>交付排期</h2>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:10%">批次</th><th style="width:48%">内容</th><th>依赖</th></tr></thead>
+  <tbody>
+    <tr><td><b>P2</b></td><td>收入计划与确认、开票申请与登记、回款登记与核销、账龄与逾期、三账视图</td><td>S2 合同、S3/S4 事件、SAP 发票/收款、OA</td></tr>
+    <tr><td><b>P4</b></td><td>收入调整、红冲、催收、质保金、对账自动化</td><td>变更单、warranty</td></tr>
+    <tr><td><b>P5</b></td><td>多币种、信用证、银企直连（可选）</td><td>海外主体、银行</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="v">82</div><div class="l">人日（P2 首版）</div></div>
+  <div class="kpi"><div class="v">3.4</div><div class="l">人月（含在 C3）</div></div>
+  <div class="kpi"><div class="v">10</div><div class="l">开发任务</div></div>
+  <div class="kpi"><div class="v">7</div><div class="l">页面</div></div>
+</div>
+
+<h2 id="s10"><span class="num">10</span>待确认</h2>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:8%">编号</th><th style="width:44%">问题</th><th>建议</th></tr></thead>
+  <tbody>
+    <tr><td>DQ1</td><td>完工进度取 S4 加权还是手工</td><td>S4 优先，可覆盖并留痕</td></tr>
+    <tr><td>DQ2</td><td>关账粒度：项目级还是公司级</td><td>先项目级，公司级后加</td></tr>
+    <tr><td>DQ3</td><td>红冲是否双人复核</td><td>要求</td></tr>
+    <tr><td>DQ4</td><td>票据贴现/兑付是否跟踪</td><td>P4 加票据台账</td></tr>
+  </tbody>
+</table>
+</div>
+
+<footer class="doc-foot">
+  <span>C3 资金中枢 · 核心设计 v1.3 · 2026-11-18</span>
+  <span>完整字段、接口契约、数据字典与测试要点见《C3 详细设计 v1.0》</span>
+</footer>
+</main>
+</div>
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+  var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));}).filter(Boolean);
+  if(!('IntersectionObserver' in window)||!targets.length)return;
+  var vis=new Map();
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){vis.set(e.target.id,e.isIntersecting?e.intersectionRatio:0);});
+    var best=null,r=0;vis.forEach(function(v,k){if(v>r){r=v;best=k;}});
+    if(!best)return;
+    links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+best);});
+  },{rootMargin:'-10% 0px -70% 0px',threshold:[0,.2,.6,1]});
+  targets.forEach(function(t){io.observe(t);});
+})();
+</script>
+</body>
+</html>
