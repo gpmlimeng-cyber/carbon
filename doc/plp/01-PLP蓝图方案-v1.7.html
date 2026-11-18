@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PLP 项目全生命周期运营管理平台 · 蓝图方案 v1.7</title>
+<style>
+  :root{
+    --ink:#111827; --ink2:#374151; --muted:#6b7280; --line:#e5e7eb; --line2:#d1d5db;
+    --bg:#fff; --panel:#f8fafc; --panel2:#f1f5f9;
+    --accent:#0f6b5c; --accent2:#0b5449; --accent-soft:#ecf7f4;
+    --blue:#3b4ea0; --blue-soft:#f4f6ff; --blue-line:#c7cff0;
+    --warn:#92400e; --warn-soft:#fffbeb; --warn-line:#fcd34d;
+    --danger:#9f1239; --danger-soft:#fff1f2;
+    --r:10px; --r-sm:6px;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.78;-webkit-font-smoothing:antialiased}
+  .shell{display:grid;grid-template-columns:270px minmax(0,1fr)}
+  nav.toc{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:28px 18px 40px}
+  nav.toc .brand{font-weight:700;font-size:14px;color:var(--accent2)}
+  nav.toc .brand small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:3px}
+  nav.toc ol{list-style:none;margin:18px 0 0;padding:0}
+  nav.toc a{display:block;padding:6px 10px;margin:1px 0;border-radius:var(--r-sm);color:var(--ink2);text-decoration:none;font-size:13.5px;line-height:1.5;border-left:2px solid transparent}
+  nav.toc a:hover{background:#eef2f5;color:var(--ink)}
+  nav.toc a.active{background:var(--accent-soft);color:var(--accent2);border-left-color:var(--accent);font-weight:600}
+  nav.toc .foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.6}
+  main{padding:56px 56px 120px;max-width:1140px}
+
+  .cover{border-bottom:1px solid var(--line);padding-bottom:34px;margin-bottom:34px}
+  .kicker{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .cover h1{font-size:37px;line-height:1.25;margin:14px 0 10px;letter-spacing:-.01em;font-weight:800}
+  .cover .sub{font-size:17px;color:var(--ink2);margin:0;max-width:800px}
+  .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:26px}
+  .meta div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+  .meta dt{font-size:11.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 3px}
+  .meta dd{margin:0;font-size:13.5px;font-weight:600}
+
+  h2{font-size:25px;margin:62px 0 6px;letter-spacing:-.01em;font-weight:800;scroll-margin-top:20px}
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:10px;font-size:20px}
+  h3{font-size:18px;margin:30px 0 8px;font-weight:700;scroll-margin-top:20px}
+  h4{font-size:15.5px;margin:20px 0 6px;font-weight:700}
+  p{margin:10px 0}
+  .lede{color:var(--ink2);font-size:16px;max-width:840px}
+  ul,ol{padding-left:22px;margin:10px 0}
+  li{margin:5px 0}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel2);padding:1.5px 5px;border-radius:4px;color:#0b3b34}
+  pre{background:#0f172a;color:#e2e8f0;padding:16px 18px;border-radius:var(--r);overflow:auto;font-size:12.5px;line-height:1.65}
+  pre code{background:none;color:inherit;padding:0}
+  .hr{height:1px;background:var(--line);margin:42px 0}
+
+  .callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:var(--r-sm);padding:14px 18px;margin:18px 0}
+  .callout .t{font-weight:700;font-size:13.5px;color:var(--accent2);margin-bottom:4px}
+  .callout.warn{border-left-color:var(--warn-line);background:var(--warn-soft)}
+  .callout.warn .t{color:var(--warn)}
+  .callout.danger{border-left-color:#fda4af;background:var(--danger-soft)}
+  .callout.danger .t{color:var(--danger)}
+  .callout p:last-child{margin-bottom:0}
+
+  .tw{overflow:auto;margin:16px 0;border:1px solid var(--line);border-radius:var(--r)}
+  table{border-collapse:collapse;width:100%;font-size:13.6px;background:#fff}
+  caption{caption-side:top;text-align:left;font-size:12.5px;color:var(--muted);padding:10px 14px 8px;border-bottom:1px solid var(--line);background:var(--panel)}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--panel2);font-size:12.5px;color:var(--ink2);font-weight:700;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:#fcfcfd}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2);background:#fff;white-space:nowrap}
+  .tag.ok{border-color:#a7ded2;background:#effaf6;color:#0b5449}
+  .tag.mid{border-color:#fcd34d;background:#fffbeb;color:#92400e}
+  .tag.no{border-color:#fda4af;background:#fff1f2;color:#9f1239}
+  .tag.gray{background:var(--panel2);color:var(--muted)}
+
+  figure{margin:22px 0;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:20px 18px 14px}
+  figure svg{display:block;width:100%;height:auto}
+  figcaption{font-size:12.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--line2)}
+  .svg-label{font:600 12.5px var(--sans);fill:var(--ink)}
+  .svg-sub{font:500 11px var(--sans);fill:var(--muted)}
+  .svg-box{fill:#fff;stroke:var(--line2)}
+  .svg-accent{fill:#ecf7f4;stroke:#8dcdbf}
+  .svg-blue{fill:#f4f6ff;stroke:#c7cff0}
+  .svg-arrow{stroke:#94a3b8;stroke-width:1.4;fill:none;marker-end:url(#ar)}
+  .svg-arrow-a{stroke:var(--accent);stroke-width:1.8;fill:none;marker-end:url(#ara)}
+
+  /* 放大图内字号（1600 宽画布缩放到正文宽度后仍可读） */
+  figure svg text[font-size="11"]{font-size:14.5px}
+  figure svg text[font-size="11.5"]{font-size:15px}
+  figure svg text[font-size="12"]{font-size:15.5px}
+  figure svg text[font-size="12.5"]{font-size:16px}
+  figure svg text[font-size="13"]{font-size:16.5px}
+  figure svg text[font-size="13.5"]{font-size:17px}
+  figure svg text[font-size="14"]{font-size:17.5px}
+  figure svg text[font-size="15"]{font-size:19px}
+  figure svg text[font-size="22"]{font-size:29px}
+  figure svg g[font-size="12"] text{font-size:15px}
+
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:18px 0}
+  .card{border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;background:#fff}
+  .card h4{margin:0 0 6px}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink2)}
+  .card li{margin:3px 0}
+  .card .badge{font-size:11px;color:var(--accent2);background:var(--accent-soft);border:1px solid #8dcdbf;border-radius:999px;padding:1px 8px;margin-left:6px}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
+  .kpi{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:#fff}
+  .kpi .v{font-size:25px;font-weight:800;color:var(--accent2);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+  /* 流程泳道 */
+  .lanes{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin:18px 0}
+  .lane{display:grid;grid-template-columns:132px repeat(5,minmax(0,1fr));border-top:1px solid var(--line)}
+  .lane:first-child{border-top:none}
+  .lane .who{background:var(--panel2);padding:12px 14px;font-size:13px;font-weight:700;color:var(--ink2);border-right:1px solid var(--line)}
+  .lane .cell{padding:12px 12px;border-right:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+  .lane .cell:last-child{border-right:none}
+  .lane .cell b{display:block;color:var(--ink);font-size:12.8px;margin-bottom:2px}
+  .lane .cell .gate{display:inline-block;margin-top:6px;font-size:11px;color:var(--danger);background:var(--danger-soft);border:1px solid #fda4af;border-radius:4px;padding:0 6px}
+  .lane .cell .ho{display:inline-block;margin-top:6px;font-size:11px;color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-line);border-radius:4px;padding:0 6px}
+  .lane.head{background:var(--panel);font-size:12px;color:var(--muted);font-weight:700}
+  .lane.head .who{background:var(--panel)}
+
+  /* 时间轴 */
+  .gantt{border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:18px 0;background:#fff}
+  .grow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:center;margin:8px 0}
+  .grow .lbl{font-size:12.8px;color:var(--ink2);font-weight:600}
+  .track{position:relative;height:22px;background:var(--panel2);border-radius:6px}
+  .bar{position:absolute;top:0;height:22px;border-radius:6px;background:var(--accent);opacity:.85}
+  .bar.blue{background:var(--blue)}
+  .bar.amber{background:#b45309}
+  .bar.gray{background:#94a3b8}
+  .gaxis{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;margin-top:6px;color:var(--muted);font-size:11px}
+  .gaxis div:last-child{display:flex;justify-content:space-between}
+
+  footer.doc-foot{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+  @media (max-width:1040px){
+    .shell{grid-template-columns:1fr}
+    nav.toc{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);padding:18px}
+    nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+    main{padding:32px 22px 80px}
+    .cover h1{font-size:28px}
+    .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .lane{grid-template-columns:110px repeat(5,minmax(0,1fr))}
+  }
+  @media print{
+    @page{size:A4;margin:16mm 14mm}
+    body{font-size:10.5pt;line-height:1.62}
+    .shell{display:block}
+    nav.toc{display:none}
+    main{padding:0;max-width:none}
+    .cover h1{font-size:24pt}
+    h2{font-size:15pt;margin-top:22pt;page-break-after:avoid}
+    h3{font-size:12pt;page-break-after:avoid}
+    figure,table,.callout,.lane,.gantt{page-break-inside:avoid}
+    .tw{overflow:visible}
+    pre{background:#f8fafc;color:#111827;border:1px solid #d1d5db}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="toc" aria-label="目录">
+  <div class="brand">PLP 蓝图方案<small>项目全生命周期运营管理平台 · v1.7</small></div>
+  <ol>
+    <li><a href="#s1">1 执行摘要</a></li>
+    <li><a href="#s2">2 范围与原则</a></li>
+    <li><a href="#s3">3 业务方案</a></li>
+    <li><a href="#s4">4 总体架构（业务 + 平台）</a></li>
+    <li><a href="#s5">5 应用架构（5 工作台 × 4 中枢）</a></li>
+    <li><a href="#s6">6 数据架构</a></li>
+    <li><a href="#s7">7 集成架构</a></li>
+    <li><a href="#s8">8 全链协同与移交</a></li>
+    <li><a href="#s9">9 交接与卡点机制</a></li>
+    <li><a href="#s10">10 技术架构与部署</a></li>
+    <li><a href="#s11">11 实施路线</a></li>
+    <li><a href="#s12">12 治理与运维</a></li>
+    <li><a href="#s13">13 风险与对策</a></li>
+    <li><a href="#s14">14 附录</a></li>
+  </ol>
+  <div class="foot">
+    对齐《立项报告 V1.0》<br />
+    推荐架构：Carbon 主干 + 专业系统各司其职<br />
+    建议 A4 打印评审
+  </div>
+</nav>
+
+<main>
+<header class="cover">
+  <div class="kicker">Solution Blueprint · PLP</div>
+  <h1>项目全生命周期运营管理平台<br />蓝图方案</h1>
+  <p class="sub">
+    以项目为主线，Carbon 承担项目主干与交付执行，SAP/SRM/MES/PDM 等承担专业记录，
+    数据层支撑驾驶舱与 Agent —— 一次建档、全链共用、节点卡卡、过程留痕。
+  </p>
+  <dl class="meta">
+    <div><dt>版本</dt><dd>v1.7</dd></div>
+    <div><dt>日期</dt><dd>2026-11-18</dd></div>
+    <div><dt>范围</dt><dd>大储项目交付主线</dd></div>
+    <div><dt>状态</dt><dd>待评审</dd></div>
+  </dl>
+</header>
+
+<!-- ===== 1 ===== -->
+<h2 id="s1"><span class="num">01</span>执行摘要</h2>
+<p class="lede">
+  立项报告的四个问题（无计划底座、移交无固化、过程无留痕、系统孤岛）都成立；但全量范围在 7 个月内不可达。
+  本蓝图给出的解法是：<strong>把“项目主干”做厚，把“板块前端”做薄，把“专业记录”留给专业系统</strong>。
+</p>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">8</div><div class="l">应用模块（主干 3 + 板块 4 + 公共 1）</div></div>
+  <div class="kpi"><div class="v">6</div><div class="l">新建数据模型</div></div>
+  <div class="kpi"><div class="v">21</div><div class="l">标准接口（9 类系统）</div></div>
+  <div class="kpi"><div class="v">≈50</div><div class="l">人月（2027-06 前，含平台分摊）</div></div>
+</div>
+
+<h3>三条必须写进方案的边界</h3>
+<div class="cards">
+  <div class="card"><h4>① 项目主数据归 PLP</h4>
+    <p>项目号、阶段、计划、里程碑、交接与卡点由 PLP 拥有；订单、库存、成本、财务归 SAP，用项目号 + charge number 关联。</p></div>
+  <div class="card"><h4>② 不重算 MRP、不做库存账</h4>
+    <p>物料计划由 SAP 输出，PLP 只承接“需求行 → 供应承诺 → 进度跟踪 → 卡点校验”，不产生第二套库存与成本。</p></div>
+  <div class="card"><h4>③ 审批优先复用 OA</h4>
+    <p>PLP 只做业务节点校验与留痕，不重建审批中心；既降低许可依赖，也回应“审批链路冗长”的诉求。</p></div>
+</div>
+
+<h3>四个结论</h3>
+<ul>
+  <li><strong>范围要分两批</strong>：2027-06 前交付“主干 + 供应链 + 工程交接 + 售后”，移动离线、驾驶舱、Agent 放下半年。</li>
+  <li><strong>里程碑二要收缩</strong>：从“全链路流程上线”改为“主数据 + 计划/里程碑 + 看板 v0”，否则会连锁拖累 M3–M4。</li>
+  <li><strong>交接与卡点是一号工程</strong>：直接对应“结构性短板”，也是业务最快感知价值的地方。</li>
+  <li><strong>先做 4 周 PoC</strong>：主干 + PDM/SAP 两条接口，通过再签外部开发合同。</li>
+</ul>
+
+<!-- ===== 2 ===== -->
+<h2 id="s2"><span class="num">02</span>范围与原则</h2>
+<h3>2.1 两批范围</h3>
+<div class="tw">
+<table>
+  <caption>表 2-1　分批建设范围（与里程碑对齐）</caption>
+  <thead><tr><th style="width:12%">批次</th><th style="width:18%">时间</th><th style="width:44%">交付内容</th><th>对应里程碑</th></tr></thead>
+  <tbody>
+    <tr><td><b>第一批</b></td><td>2026-12 → 2027-06</td>
+      <td>项目主干（主数据/编码/模板/计划/里程碑/看板 v0）、供应链贯通（需求行→采购/到货/生产/发运）、工程与交接（手续台账/现场工单/验收移交/交接单+卡点）、售后（承接/故障工单/备件/质保轻模型）</td>
+      <td>M2（收缩版）、M3、M4</td></tr>
+    <tr><td><b>第二批</b></td><td>2027-07 → 2027-12</td>
+      <td>移动在线与离线、BI 驾驶舱、Agent（检索+预警）、招采评标增强、海外知识库</td>
+      <td>M5、M6、M7</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="t">范围变更须经委员会批准（P0）</div>
+  <p>本方案把立项报告的里程碑二从“全链路流程上线”收缩为“主数据 + 计划/里程碑 + 看板 v0”，属于<b>范围与验收口径变更</b>。实施前须由数字化委员会书面批准，并同步修订立项报告；未经批准，不得据此排期或对外承诺。</p>
+</div>
+
+<h3>2.2 明确不做（防止范围蔓延）</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:30%">不做</th><th>原因与替代</th></tr></thead>
+  <tbody>
+    <tr><td>财务总账、成本核算、库存账</td><td>SAP/财务系统为唯一账本；PLP 只读汇总并做项目维度展示</td></tr>
+    <tr><td>MRP 运算与排产求解</td><td>SAP/MES 输出计划结果；PLP 跟踪承诺与进度</td></tr>
+    <tr><td>招投标评标全流程（一期）</td><td>模型复杂、低频；一期只做招标台账与合同挂接</td></tr>
+    <tr><td>离线填报（一期）</td><td>技术独立、风险高；一期先上在线移动审批/拍照/上报，离线单独立项</td></tr>
+    <tr><td>重建审批中心</td><td>复用 OA，PLP 只做节点校验与留痕</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>2.3 建设原则（承接立项报告）</h3>
+<ul>
+  <li><b>总体规划、分步实施</b>：先定主数据与接口标准，再按板块交付。</li>
+  <li><b>业务主导、统一承建</b>：板块是需求与验收主体，数字化部统一技术标准。</li>
+  <li><b>一数一源、全程共享</b>：字段级 owner，谁产生谁维护。</li>
+  <li><b>节点卡卡、过程留痕</b>：卡点可阻断、留痕可回放。</li>
+</ul>
+
+<!-- ===== 3 ===== -->
+<!-- ===== 3 业务方案 ===== -->
+<h2 id="s3"><span class="num">03</span>业务方案</h2>
+<p class="lede">
+  系统是载体，业务才是内容。本章回答四个问题：业务上要变成什么样、谁在什么节点负责什么、
+  哪些事必须按规则办、以及怎么衡量它真的变好了。
+</p>
+
+<h3>3.1 业务目标与价值主张</h3>
+<p>
+  业务目标一句话：<b>让每一个大储项目从签约到转运维，都在一条线上跑，且每个责任交接都有凭证、每个关键节点都有闸门。</b>
+</p>
+<div class="cards">
+  <div class="card"><h4>可控</h4><p>管理层打开一个项目，能看到走到哪一步、谁在做、下一步卡在谁那里、还差什么。周进度不再靠人汇总。</p></div>
+  <div class="card"><h4>可交</h4><p>板块之间换手有交接单：交什么、谁交、谁接、什么时候接、双方签了没有。出了问题能定位到人。</p></div>
+  <div class="card"><h4>可复用</h4><p>计划模板、问题库、复盘结论沉淀在平台里，新人接手同类项目不必从零摸索。</p></div>
+</div>
+
+<h3>3.2 业务能力地图</h3>
+<div class="tw">
+<table>
+  <caption>表 3-1　五大板块的业务能力与目标状态</caption>
+  <thead><tr><th style="width:13%">板块</th><th style="width:30%">核心业务能力</th><th style="width:26%">现状</th><th>目标状态</th></tr></thead>
+  <tbody>
+    <tr><td>经营与计划</td><td>计划编制、里程碑、周调度、资金与回款、复盘</td><td>线下台账 + 会议纪要，口径不一</td><td>模板化计划、周进度自动汇总、回款看板</td></tr>
+    <tr><td>立项与手续</td><td>商机立项、合同履约、八大局要件、国内外差异</td><td>eGo 管线索，手续靠 Excel 跟</td><td>要件台账 + 有效期预警，办结作为排产前置</td></tr>
+    <tr><td>招采与供货</td><td>开工会、招采、采购排产、生产跟踪、发运签收</td><td>简道云 + 人工跟单</td><td>需求行 → 供应承诺 → 四节点可视、齐套可算</td></tr>
+    <tr><td>建设与交付</td><td>施工进度、现场工单、调试验收、竣工移交</td><td>现场靠微信与纸质</td><td>工单闭环、验收资料齐套、移交双签</td></tr>
+    <tr><td>售后与运维</td><td>承接移交、故障工单、备件、质保履约</td><td>无系统承载</td><td>设备台账 + 工单 + 质保合同联动</td></tr>
+    <tr><td>公共底座</td><td>主数据、统一编号、权限、审计、看板</td><td>各系统各自建账</td><td>一次建档全链共用，指标口径统一</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.3 目标业务模式：一条主线、四个交接、八个卡点</h3>
+<p>
+  业务上只改三件事：<b>计划统一</b>（一套模板、一套里程碑）、<b>交接留证</b>（四个换手点双签）、
+  <b>卡点前置</b>（八个闸门，未过不推进）。其余流程尽量保持业务现有习惯，避免“为了系统改业务”。
+</p>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:14%">要素</th><th style="width:34%">业务含义</th><th>落地要求</th></tr></thead>
+  <tbody>
+    <tr><td>一条主线</td><td>立项投决 → 商务手续 → 招采供货 → 工程交付 → 售后运维</td><td>五阶段状态由业务动作驱动，不允许手工跳步</td></tr>
+    <tr><td>四个交接</td><td>H1 计划→营销、H2 营销→供应链、H3 供应链→工程、H4 工程→运维</td><td>交接单双签，资料清单必传，未签阶段不推进</td></tr>
+    <tr><td>八个卡点</td><td>G1 无立项不建档 … G8 质保未绑定不移交</td><td>能自动判的自动挡，需人担责的走特批（见第 9 章）</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.4 三个端到端业务场景</h3>
+<div class="tw">
+<table>
+  <caption>表 3-2　典型场景与关键动作</caption>
+  <thead><tr><th style="width:16%">场景</th><th style="width:44%">关键动作链</th><th>业务关注点</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>A 国内大储</b><br /><span class="small">500MW/2GWh</span></td>
+      <td>投决立项 → 合同签订 → 并网/土地/施工手续 → 开工会 → 采购与排产 → 生产与发运 → 到场签收 → 施工与调试 → 并网验收 → 竣工移交 → 质保起算</td>
+      <td>手续卡排产、齐套卡开工、资料卡验收；四个交接必须双签</td>
+    </tr>
+    <tr>
+      <td><b>B 海外项目</b><br /><span class="small">属地合规、时差协同</span></td>
+      <td>海外合同审批 → 属地要件 → 长交期采购 → 集港发运 → 现场工单 → 调试并网 → 属地运维承接</td>
+      <td>备件与知识库、属地法规、多主体交接（业主/EPC/运维商）</td>
+    </tr>
+    <tr>
+      <td><b>C 手续滞后 + 客户催产</b></td>
+      <td>手续未齐 → 系统阻断排产 → 项目经理申请特批（L3）→ 板块负责人审批 → 带期限豁免放行 → 到期自动恢复卡点</td>
+      <td>例外可走，但必须留痕、定期、有人担责；豁免率月度复盘</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.5 组织、角色与责任</h3>
+<div class="tw">
+<table>
+  <caption>表 3-3　RACI（R 执行 / A 负责 / C 咨询 / I 知会）</caption>
+  <thead><tr><th style="width:20%">业务活动</th><th>项目经理</th><th>经营计划</th><th>营销</th><th>供应链</th><th>工程</th><th>运维</th><th>财务</th><th>PMO</th></tr></thead>
+  <tbody>
+    <tr><td>项目建档与编号</td><td>R</td><td>C</td><td>I</td><td>I</td><td>I</td><td>I</td><td>I</td><td><b>A</b></td></tr>
+    <tr><td>总体计划与里程碑</td><td><b>A</b></td><td>R</td><td>C</td><td>C</td><td>C</td><td>C</td><td>I</td><td>I</td></tr>
+    <tr><td>合同与手续</td><td>A</td><td>C</td><td>R</td><td>I</td><td>I</td><td>I</td><td>C</td><td>I</td></tr>
+    <tr><td>采购与排产</td><td>A</td><td>C</td><td>I</td><td>R</td><td>C</td><td>I</td><td>C</td><td>I</td></tr>
+    <tr><td>发运与到场签收</td><td>A</td><td>I</td><td>I</td><td>R</td><td>C</td><td>I</td><td>I</td><td>I</td></tr>
+    <tr><td>施工与验收</td><td>A</td><td>I</td><td>I</td><td>C</td><td>R</td><td>C</td><td>I</td><td>I</td></tr>
+    <tr><td>竣工移交</td><td><b>A</b></td><td>I</td><td>I</td><td>C</td><td>R</td><td>R</td><td>I</td><td>C</td></tr>
+    <tr><td>质保与售后</td><td>C</td><td>I</td><td>C</td><td>I</td><td>C</td><td>R</td><td>I</td><td>I</td></tr>
+    <tr><td>项目关闭</td><td>R</td><td>C</td><td>I</td><td>C</td><td>C</td><td>C</td><td>C</td><td><b>A</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">说明：A 只能有一个。项目经理对“项目整体”负责，但交接与关闭由 PMO 行使否决权（A），避免“自己交给自己”。</p>
+
+<h4>海外项目 RACI 变体</h4>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">活动</th><th>业主</th><th>海外工程</th><th>属地运维商</th><th>总部供应链</th><th>PMO</th></tr></thead>
+  <tbody>
+    <tr><td>属地合规要件</td><td>C</td><td>R</td><td>C</td><td>I</td><td><b>A</b></td></tr>
+    <tr><td>集港与清关</td><td>I</td><td>R</td><td>C</td><td><b>A</b></td><td>I</td></tr>
+    <tr><td>现场施工与调试</td><td>C</td><td>R</td><td>C</td><td>I</td><td><b>A</b></td></tr>
+    <tr><td>并网与验收</td><td><b>A</b></td><td>R</td><td>C</td><td>I</td><td>C</td></tr>
+    <tr><td>运维承接</td><td>C</td><td>R</td><td>R</td><td>I</td><td><b>A</b></td></tr>
+    <tr><td>质保索赔</td><td>C</td><td>C</td><td>R</td><td>C</td><td><b>A</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">国内 RACI 不能直接套海外：业主、EPC、属地运维商三方权责必须在合同与交接单中同时写明，否则 H4 移交无法闭环。</p>
+
+<h3>3.6 五条业务规则（写进制度，不只写进系统）</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:8%">编号</th><th style="width:30%">规则</th><th>为什么</th></tr></thead>
+  <tbody>
+    <tr><td>R1</td><td>一个项目一个编号，全链引用</td><td>消灭“同一项目多套台账、60 个字段重复填报”</td></tr>
+    <tr><td>R2</td><td>阶段推进必须过交接（双签）</td><td>交接是责任换手，不是发个邮件</td></tr>
+    <tr><td>R3</td><td>关键卡点未过不得推进；例外走特批且带期限</td><td>防止“无手续排产、无要件开工”</td></tr>
+    <tr><td>R4</td><td>板块上线后 30 天停用对应线下台账</td><td>不停线下，就必然两套账</td></tr>
+    <tr><td>R5</td><td>资料随流程归档，不落个人手里</td><td>人员轮岗/离职后过程资产不丢</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.7 业务收益与度量</h3>
+<div class="tw">
+<table>
+  <caption>表 3-4　业务 KPI（与立项报告验收指标对齐）</caption>
+  <thead><tr><th style="width:30%">指标</th><th style="width:18%">现状（估）</th><th style="width:20%">12 个月目标</th><th>口径</th></tr></thead>
+  <tbody>
+    <tr><td>项目主数据统一率</td><td>多套台账</td><td><b>100%</b></td><td>一个项目一个编号，字段口径统一</td></tr>
+    <tr><td>板块交接线上完成率</td><td>0</td><td><b>100%</b></td><td>H1–H4 全部线上双签</td></tr>
+    <tr><td>关键节点留痕覆盖率</td><td>碎片化</td><td><b>100%</b></td><td>审批/变更/移交/延期均有记录</td></tr>
+    <tr><td>周进度人工汇总工时</td><td>每周 1–2 人天/项目</td><td><b>下降 80%</b></td><td>系统自动汇总，人工只做异常说明</td></tr>
+    <tr><td>关键物料齐套率（开工前）</td><td>无统计</td><td><b>≥95%</b></td><td>工单释放时 BOM 行具备供应的比例</td></tr>
+    <tr><td>资料归档完整率（验收/移交）</td><td>靠人催</td><td><b>100%</b></td><td>必传清单全齐才允许提交验收</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="small">注：表中“现状（估）”为估计值，不作为验收基线。上线前 1 个月抽样 10 个在办项目做一次基线测量，形成《KPI 基线与口径说明》，经板块确认后作为验收依据；否则 ≥95%/100% 无法判定。</p>
+
+<h3>3.8 变革与推广路径</h3>
+<ul>
+  <li><b>试点（2 个项目，3 个月）</b>：1 个国内大储 + 1 个海外，只跑“主干 + 交接 + 4 条卡点”，验证再推广。</li>
+  <li><b>分层培训</b>：管理层看驾驶舱与预警；项目经理学计划与交接；业务岗学本板块表单与卡点。</li>
+  <li><b>考核挂钩</b>：立项报告已有专项激励，建议把“交接线上完成率、资料归档率”纳入部门月度考核。</li>
+  <li><b>月度复盘</b>：卡点阻断/豁免 Top10、交接驳回原因 Top5，直接进下月流程优化清单。</li>
+</ul>
+
+<h3>3.9 业务能力与系统模块映射</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">业务能力</th><th style="width:26%">承载模块</th><th>关键对象</th></tr></thead>
+  <tbody>
+    <tr><td>项目建档 / 编号 / 阶段</td><td>P1 平台底座</td><td>project、identifier、阶段状态机</td></tr>
+    <tr><td>投决 / 预算 / 目标责任</td><td>S1 立项投决台</td><td>投决台账、目标责任书、预算基线</td></tr>
+    <tr><td>计划 / 里程碑 / 周调度</td><td>C1 计划中枢</td><td>projectElement、milestone、baseline</td></tr>
+    <tr><td>交接 / 卡点 / 留痕</td><td>C4 责任中枢</td><td>handover、gateRule、gateCheck、permit</td></tr>
+    <tr><td>要件台账</td><td>S2 商务手续台</td><td>permit（要件）、有效期</td></tr>
+    <tr><td>需求分流 / 供货跟踪</td><td>C2 物控中枢 + S3 招采供货台</td><td>projectElementMaterial、commitment、peg</td></tr>
+    <tr><td>施工 / 验收 / 移交</td><td>S4 工程交付台</td><td>现场工单、验收单、交接单（H4）</td></tr>
+    <tr><td>质保 / 售后</td><td>S5 售后运维台</td><td>serviceJob、customerAsset、warranty</td></tr>
+    <tr><td>资金 / 回款 / 毛利</td><td>C3 资金中枢</td><td>billing、invoice、成本汇总</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="s4"><span class="num">04</span>总体架构：业务架构 + 平台视图</h2>
+<p class="lede">
+  先讲业务怎么运转，再讲系统怎么支撑。业务核心架构是一张“经纬网”：<b>横向是项目走过的价值流阶段，纵向是计划、物料、资金、责任四条贯穿始终的管理线</b>。
+  每一个交叉格子里，都同时存在一个业务对象、一个责任主体和一个可被校验的节点。
+</p>
+
+<h3>4.1 业务核心架构：一条价值流 × 四条管理线</h3>
+<p>
+  图 4-1 是本方案的“母图”：横轴是 ① 价值流层，纵轴是 ② 管理线层，交叉格子由 ③ 执行层（五大板块）负责，
+  格子里的闸门与交接点属于 ④ 管控层，贯穿全表的项目号与字段属于 ⑤ 数据与集成层。
+  4.8 的五层结构，就是这张图的展开。
+</p>
+<figure>
+<svg viewBox="0 0 1600 1070" role="img" aria-label="业务核心架构：价值流与四条管理线">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect width="1600" height="1070" fill="#ffffff"/>
+  <text x="40" y="44" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#111827">图 4-1 · 业务核心架构</text>
+  <text x="40" y="72" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#6b7280">横向：一条项目价值流（五个阶段）　纵向：四条管理线（计划 / 物料 / 资金 / 责任）　交叉：业务对象 + 责任主体 + 闸门</text>
+
+  <!-- 价值流方向箭头 -->
+  <path d="M250,110 L1560,110" stroke="#0f6b5c" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+  <text x="250" y="100" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#0f6b5c">项目价值流（越往后，交付越确定）</text>
+
+  <!-- 阶段表头 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="250" y="128" width="256" height="66" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="266" y="152" font-size="13" font-weight="700" fill="#0b5449">① 立项投决</text>
+    <text x="266" y="172" font-size="11" fill="#6b7280">商机 · 投决 · 预算基线</text>
+
+    <rect x="514" y="128" width="256" height="66" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="530" y="152" font-size="13" font-weight="700" fill="#0b5449">② 商务手续</text>
+    <text x="530" y="172" font-size="11" fill="#6b7280">合同 · 八大局要件</text>
+
+    <rect x="778" y="128" width="256" height="66" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="794" y="152" font-size="13" font-weight="700" fill="#0b5449">③ 招采供货</text>
+    <text x="794" y="172" font-size="11" fill="#6b7280">采购 · 排产 · 发运</text>
+
+    <rect x="1042" y="128" width="256" height="66" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="1058" y="152" font-size="13" font-weight="700" fill="#0b5449">④ 工程交付</text>
+    <text x="1058" y="172" font-size="11" fill="#6b7280">施工 · 调试 · 并网</text>
+
+    <rect x="1306" y="128" width="256" height="66" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="1322" y="152" font-size="13" font-weight="700" fill="#0b5449">⑤ 售后运维</text>
+    <text x="1322" y="172" font-size="11" fill="#6b7280">移交 · 质保 · 复盘</text>
+  </g>
+
+  <!-- 行标签 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="40" y="220" width="190" height="150" rx="8" fill="#f1f5f9" stroke="#e2e8f0"/>
+    <text x="60" y="280" font-size="15" font-weight="700" fill="#111827">计划线</text>
+    <text x="60" y="302" font-size="11" fill="#6b7280">计划 → 实际 → 偏差</text>
+    <text x="60" y="322" font-size="11" fill="#6b7280">基线 · 变更 · 预警</text>
+
+    <rect x="40" y="380" width="190" height="150" rx="8" fill="#f1f5f9" stroke="#e2e8f0"/>
+    <text x="60" y="440" font-size="15" font-weight="700" fill="#111827">物料线</text>
+    <text x="60" y="462" font-size="11" fill="#6b7280">需求分流 → 承诺</text>
+    <text x="60" y="482" font-size="11" fill="#6b7280">备料 · 到货 · 齐套</text>
+
+    <rect x="40" y="540" width="190" height="150" rx="8" fill="#f1f5f9" stroke="#e2e8f0"/>
+    <text x="60" y="600" font-size="15" font-weight="700" fill="#111827">资金线</text>
+    <text x="60" y="622" font-size="11" fill="#6b7280">预算 → 付款 → 回款</text>
+    <text x="60" y="642" font-size="11" fill="#6b7280">毛利 · 现金流</text>
+
+    <rect x="40" y="700" width="190" height="150" rx="8" fill="#f1f5f9" stroke="#e2e8f0"/>
+    <text x="60" y="760" font-size="15" font-weight="700" fill="#111827">责任线</text>
+    <text x="60" y="782" font-size="11" fill="#6b7280">RACI → 交接 → 卡点</text>
+    <text x="60" y="802" font-size="11" fill="#6b7280">双签 · 留痕 · 考核</text>
+  </g>
+
+  <!-- 计划行 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="250" y="220" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="266" y="248" font-size="13" font-weight="700" fill="#111827">总体计划与里程碑</text>
+    <text x="266" y="270" font-size="11" fill="#6b7280">模板套用 · 基线 · 周调度</text>
+    <text x="266" y="292" font-size="11" fill="#6b7280">资金与资源策划</text>
+
+    <rect x="514" y="220" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="530" y="248" font-size="13" font-weight="700" fill="#111827">手续计划</text>
+    <text x="530" y="270" font-size="11" fill="#6b7280">要件节点 · 倒排</text>
+    <text x="530" y="292" font-size="11" fill="#6b7280">与排产里程碑对齐</text>
+
+    <rect x="778" y="220" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="794" y="248" font-size="13" font-weight="700" fill="#111827">排产与交付计划</text>
+    <text x="794" y="270" font-size="11" fill="#6b7280">开工会 · 排产里程碑</text>
+    <text x="794" y="292" font-size="11" fill="#6b7280">生产与发运节点</text>
+
+    <rect x="1042" y="220" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1058" y="248" font-size="13" font-weight="700" fill="#111827">施工计划</text>
+    <text x="1058" y="270" font-size="11" fill="#6b7280">工单 · 周计划</text>
+    <text x="1058" y="292" font-size="11" fill="#6b7280">并网与验收节点</text>
+
+    <rect x="1306" y="220" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1322" y="248" font-size="13" font-weight="700" fill="#111827">运维与复盘计划</text>
+    <text x="1322" y="270" font-size="11" fill="#6b7280">质保计划 · 复盘议题</text>
+    <text x="1322" y="292" font-size="11" fill="#6b7280">经验回写模板</text>
+  </g>
+
+  <!-- 物料行 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="250" y="380" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="266" y="408" font-size="13" font-weight="700" fill="#111827">需求分流</text>
+    <text x="266" y="430" font-size="11" fill="#6b7280">库存领用 / 外购 / 自制</text>
+    <text x="266" y="452" font-size="11" fill="#6b7280">长交期提前识别</text>
+
+    <rect x="514" y="380" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="530" y="408" font-size="13" font-weight="700" fill="#111827">BOM 与协议冻结</text>
+    <text x="530" y="430" font-size="11" fill="#6b7280">技术协议 · 选型确认</text>
+    <text x="530" y="452" font-size="11" fill="#6b7280">变更走变更单</text>
+
+    <rect x="778" y="380" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="794" y="408" font-size="13" font-weight="700" fill="#111827">采购与齐套</text>
+    <text x="794" y="430" font-size="11" fill="#6b7280">承诺日 · 到货 · 生产</text>
+    <text x="794" y="452" font-size="11" fill="#6b7280">齐套率 · 承诺漂移</text>
+
+    <rect x="1042" y="380" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1058" y="408" font-size="13" font-weight="700" fill="#111827">到场与现场备件</text>
+    <text x="1058" y="430" font-size="11" fill="#6b7280">签收 · 缺件补供</text>
+    <text x="1058" y="452" font-size="11" fill="#6b7280">项目库存 / 备件</text>
+
+    <rect x="1306" y="380" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1322" y="408" font-size="13" font-weight="700" fill="#111827">质保换件</text>
+    <text x="1322" y="430" font-size="11" fill="#6b7280">备件消耗 · 返修</text>
+    <text x="1322" y="452" font-size="11" fill="#6b7280">批次追溯</text>
+  </g>
+
+  <!-- 资金行 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="250" y="540" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="266" y="568" font-size="13" font-weight="700" fill="#111827">预算与投决</text>
+    <text x="266" y="590" font-size="11" fill="#6b7280">投资估算 · 资金计划</text>
+    <text x="266" y="612" font-size="11" fill="#6b7280">回款预测</text>
+
+    <rect x="514" y="540" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="530" y="568" font-size="13" font-weight="700" fill="#111827">合同与付款条件</text>
+    <text x="530" y="590" font-size="11" fill="#6b7280">预付款 · 节点款</text>
+    <text x="530" y="612" font-size="11" fill="#6b7280">质保金条款</text>
+
+    <rect x="778" y="540" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="794" y="568" font-size="13" font-weight="700" fill="#111827">采购付款</text>
+    <text x="794" y="590" font-size="11" fill="#6b7280">到货付款 · 发票</text>
+    <text x="794" y="612" font-size="11" fill="#6b7280">资金占用与账期</text>
+
+    <rect x="1042" y="540" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1058" y="568" font-size="13" font-weight="700" fill="#111827">进度款与验收款</text>
+    <text x="1058" y="590" font-size="11" fill="#6b7280">里程碑开票</text>
+    <text x="1058" y="612" font-size="11" fill="#6b7280">验收触发回款</text>
+
+    <rect x="1306" y="540" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1322" y="568" font-size="13" font-weight="700" fill="#111827">质保金与回款</text>
+    <text x="1322" y="590" font-size="11" fill="#6b7280">尾款 · 应收账龄</text>
+    <text x="1322" y="612" font-size="11" fill="#6b7280">项目毛利结算</text>
+  </g>
+
+  <!-- 责任行 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="250" y="700" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="266" y="728" font-size="13" font-weight="700" fill="#111827">立项责任</text>
+    <text x="266" y="750" font-size="11" fill="#6b7280">投决签字 · 计划 owner</text>
+    <text x="266" y="772" font-size="11" fill="#6b7280">目标与预算承诺</text>
+    <text x="266" y="804" font-size="10.5" fill="#9f1239">G1 无立项不建档</text>
+
+    <rect x="514" y="700" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="530" y="728" font-size="13" font-weight="700" fill="#111827">手续责任</text>
+    <text x="530" y="750" font-size="11" fill="#6b7280">要件 owner · 合规</text>
+    <text x="530" y="772" font-size="11" fill="#6b7280">并网/土地/施工许可</text>
+    <text x="530" y="804" font-size="10.5" fill="#9f1239">G2 手续未办结不排产</text>
+
+    <rect x="778" y="700" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="794" y="728" font-size="13" font-weight="700" fill="#111827">供应链责任</text>
+    <text x="794" y="750" font-size="11" fill="#6b7280">齐套 · 发运责任</text>
+    <text x="794" y="772" font-size="11" fill="#6b7280">承诺日期对外负责</text>
+    <text x="794" y="804" font-size="10.5" fill="#9f1239">G3 协议 / G4 齐套 / G5 漂移</text>
+
+    <rect x="1042" y="700" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1058" y="728" font-size="13" font-weight="700" fill="#111827">工程责任</text>
+    <text x="1058" y="750" font-size="11" fill="#6b7280">施工 · 验收责任</text>
+    <text x="1058" y="772" font-size="11" fill="#6b7280">并网结果负责</text>
+    <text x="1058" y="804" font-size="10.5" fill="#9f1239">G6 资料不齐不验收</text>
+
+    <rect x="1306" y="700" width="256" height="150" rx="8" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="1322" y="728" font-size="13" font-weight="700" fill="#111827">运维责任</text>
+    <text x="1322" y="750" font-size="11" fill="#6b7280">承接 · 质保责任</text>
+    <text x="1322" y="772" font-size="11" fill="#6b7280">SLA 与客户满意度</text>
+    <text x="1322" y="804" font-size="10.5" fill="#9f1239">G7 未移交不关闭 · G8 质保</text>
+  </g>
+
+  <line x1="40" y1="866" x2="1560" y2="866" stroke="#e5e7eb"/>
+  <!-- 交接点 -->
+  <g font-family="'PingFang SC',sans-serif">
+    <circle cx="514" cy="884" r="16" fill="#f4f6ff" stroke="#3b4ea0" stroke-width="1.6"/>
+    <text x="514" y="886" font-size="11" font-weight="700" fill="#3b4ea0" text-anchor="middle">H1</text>
+    <circle cx="778" cy="884" r="16" fill="#f4f6ff" stroke="#3b4ea0" stroke-width="1.6"/>
+    <text x="778" y="886" font-size="11" font-weight="700" fill="#3b4ea0" text-anchor="middle">H2</text>
+    <circle cx="1042" cy="884" r="16" fill="#f4f6ff" stroke="#3b4ea0" stroke-width="1.6"/>
+    <text x="1042" y="886" font-size="11" font-weight="700" fill="#3b4ea0" text-anchor="middle">H3</text>
+    <circle cx="1306" cy="884" r="16" fill="#f4f6ff" stroke="#3b4ea0" stroke-width="1.6"/>
+    <text x="1306" y="886" font-size="11" font-weight="700" fill="#3b4ea0" text-anchor="middle">H4</text>
+
+    <text x="250" y="934" font-size="11.5" fill="#374151">四个交接点（双签换手）：H1 计划→营销　H2 营销→供应链　H3 供应链→工程　H4 工程→运维</text>
+    <text x="250" y="960" font-size="11.5" fill="#374151">八个闸门（未过不推进）：G1 建档　G2 排产　G3 下单　G4 开工　G5 承诺漂移　G6 验收　G7 关闭　G8 移交</text>
+    <text x="250" y="986" font-size="10.5" fill="#6b7280">读图：横轴=①价值流层　纵轴=②管理线层　格子=③执行层（五大板块）　闸门/交接=④管控层　项目号与字段=⑤数据与集成层</text>
+  </g>
+</svg>
+<figcaption>图 4-1　业务核心架构：横向五个价值流阶段、纵向四条管理线；每格同时承载业务对象、责任主体与闸门。</figcaption>
+</figure>
+
+<h3>4.2 阶段一 · 立项投决</h3>
+<p><b>阶段目标：</b>回答“做不做、按什么目标做、用多少钱做”，把商机变成一份可执行的项目基线与预算。</p>
+<p class="small"><b>输入：</b>客户需求/商机、技术方案初稿、投资估算、交付能力评估　→　<b>输出：</b>投决批复、项目编号、总体计划基线、预算与回款预测</p>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:10%">管理线</th><th style="width:32%">本阶段要做的事</th><th style="width:30%">关键动作/对象</th><th>产出与判据</th></tr></thead>
+  <tbody>
+    <tr><td>计划线</td><td>套用项目类型模板，形成总体计划与里程碑基线</td><td>里程碑定义、关键路径、资源与产能初排</td><td>计划基线发布；里程碑可被后续阶段引用</td></tr>
+    <tr><td>物料线</td><td>识别长交期与瓶颈物料，判断供应可行性</td><td>电芯/PCS/主变等长交期清单、备选供应方案</td><td>长交期清单与首单建议时间</td></tr>
+    <tr><td>资金线</td><td>投资估算与资金计划，明确毛利目标与回款节奏</td><td>投资测算、付款计划草案、回款预测</td><td>预算获批；项目级资金计划建档</td></tr>
+    <tr><td>责任线</td><td>明确投决责任与项目经理任命</td><td>投决会签字、项目 owner、目标责任书</td><td>G1 通过：有批复才允许建档</td></tr>
+  </tbody>
+</table>
+</div>
+<p><b>关键流程：</b>① 商机登记 → ② 技术方案与可行性 → ③ 投资测算与产能评估 → ④ 投决会审议 → ⑤ 项目建档与编号 → ⑥ 计划基线与预算发布。</p>
+<p><b>交接与卡点：</b>H1 立项投决 → 商务手续；<b>G1 无立项不建档</b>（无投决批复不允许创建项目）。</p>
+
+<h3>4.3 阶段二 · 商务手续</h3>
+<p><b>阶段目标：</b>把“合同怎么签、手续怎么办”落成可排产、可下单的前置条件，避免无手续排产。</p>
+<p class="small"><b>输入：</b>投决批复、技术方案、客户商务条件　→　<b>输出：</b>销售合同、技术协议、八大局要件台账、排产许可</p>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:10%">管理线</th><th style="width:32%">本阶段要做的事</th><th style="width:30%">关键动作/对象</th><th>产出与判据</th></tr></thead>
+  <tbody>
+    <tr><td>计划线</td><td>编制手续节点计划，与排产/发运里程碑倒排</td><td>要件节点、责任人与办理时限</td><td>手续计划与总计划对齐，逾期可预警</td></tr>
+    <tr><td>物料线</td><td>冻结 BOM 与技术协议，锁定选型与长交期</td><td>技术协议评审、BOM 冻结、变更走变更单</td><td>协议签署；BOM 版本锁定</td></tr>
+    <tr><td>资金线</td><td>落实合同付款条件与预付款</td><td>付款条款、保函、预付款到账</td><td>预付款到账或授信落实</td></tr>
+    <tr><td>责任线</td><td>要件 owner 到人，合规签字留痕</td><td>并网/土地/规划/施工/开工许可</td><td>G2 通过：要件齐或带期限豁免</td></tr>
+  </tbody>
+</table>
+</div>
+<p><b>关键流程：</b>① 合同评审 → ② 签约与预付款 → ③ 技术协议确认 → ④ 八大局要件办理 → ⑤ 要件核验 → ⑥ 发出排产许可。</p>
+<p><b>交接与卡点：</b>H2 商务手续 → 招采供货；<b>G2 手续未办结不排产</b>、<b>G3 无技术协议不下单</b>（例外走 L3 特批，带期限）。</p>
+
+<h3>4.4 阶段三 · 招采供货</h3>
+<p><b>阶段目标：</b>把“什么时候、什么货、到哪”变成可承诺、可跟踪、可校验的供应。</p>
+<p class="small"><b>输入：</b>已冻结 BOM、排产许可　→　<b>输出：</b>采购订单、生产订单、发运计划、到场签收单</p>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:10%">管理线</th><th style="width:32%">本阶段要做的事</th><th style="width:30%">关键动作/对象</th><th>产出与判据</th></tr></thead>
+  <tbody>
+    <tr><td>计划线</td><td>开工会定排产与交付里程碑，形成周计划</td><td>开工会纪要、排产里程碑、发运节点</td><td>排产计划与项目里程碑一致</td></tr>
+    <tr><td>物料线</td><td>需求分流（库存/外购/自制），跟踪备料—到货—生产—发运四节点</td><td>需求行、供应承诺、齐套率、承诺偏差</td><td>G4 齐套率 ≥95%；G5 偏差 &gt;3 天升级</td></tr>
+    <tr><td>资金线</td><td>按合同与到货节点付款，管理资金占用</td><td>采购付款、到货款、发票</td><td>付款与到货/验收节点匹配</td></tr>
+    <tr><td>责任线</td><td>供应链对承诺日期负责，供应商履约评价</td><td>齐套责任人、供应商交付评价</td><td>承诺达成率可统计</td></tr>
+  </tbody>
+</table>
+</div>
+<p><b>关键流程：</b>① 开工会 → ② 需求分流与采购/排产 → ③ 生产进度跟踪 → ④ 发运与物流 → ⑤ 到场签收 → ⑥ 缺件补供闭环。</p>
+<p><b>交接与卡点：</b>H3 招采供货 → 工程交付；<b>G4 未齐套不开工</b>、<b>G5 承诺漂移</b>（告警升级，不阻断）。</p>
+
+<h3>4.5 阶段四 · 工程交付</h3>
+<p><b>阶段目标：</b>把到场设备变成并网资产，并留下完整、可审计的交付资料。</p>
+<p class="small"><b>输入：</b>到场设备、施工许可、施工方案　→　<b>输出：</b>并网验收、竣工验收、竣工资料、移交清单</p>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:10%">管理线</th><th style="width:32%">本阶段要做的事</th><th style="width:30%">关键动作/对象</th><th>产出与判据</th></tr></thead>
+  <tbody>
+    <tr><td>计划线</td><td>施工计划与周计划，锁定并网/验收节点</td><td>施工排程、周例会、偏差纠偏</td><td>并网节点按计划或偏差可解释</td></tr>
+    <tr><td>物料线</td><td>到场缺件补供、现场备件与安装辅材</td><td>缺件清单、现场库存、退料</td><td>缺件闭环；现场库存账实一致</td></tr>
+    <tr><td>资金线</td><td>按里程碑申请进度款与验收款</td><td>进度确认、开票节点</td><td>开票与验收节点匹配</td></tr>
+    <tr><td>责任线</td><td>工程对施工与验收结果负责，资料随流程归档</td><td>验收签字、竣工资料、分包管理</td><td>G6 资料不齐不验收</td></tr>
+  </tbody>
+</table>
+</div>
+<p><b>关键流程：</b>① 施工准备与进场 → ② 安装 → ③ 调试 → ④ 涉网试验 → ⑤ 并网验收 → ⑥ 竣工验收 → ⑦ 资料归档与移交准备。</p>
+<p><b>交接与卡点：</b>H4 工程交付 → 售后运维；<b>G6 资料不齐不验收</b>（必传清单未齐不允许提交验收）。</p>
+
+<h3>4.6 阶段五 · 售后运维</h3>
+<p><b>阶段目标：</b>把交付的项目变成可持续服务的资产，并把经验回写到模板与问题库。</p>
+<p class="small"><b>输入：</b>移交清单、质保条款、设备台账　→　<b>输出：</b>运维承接、工单闭环、备件保障、质保履约、复盘结论</p>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:10%">管理线</th><th style="width:32%">本阶段要做的事</th><th style="width:30%">关键动作/对象</th><th>产出与判据</th></tr></thead>
+  <tbody>
+    <tr><td>计划线</td><td>质保期计划、巡检计划、复盘计划</td><td>巡检排程、复盘议题</td><td>质保到期预警；复盘按期完成</td></tr>
+    <tr><td>物料线</td><td>备件计划、换件与返修、批次追溯</td><td>备件库存、返修单、序列号追溯</td><td>备件满足率；换件可追溯到批次</td></tr>
+    <tr><td>资金线</td><td>质保金、尾款、运维成本与服务收入</td><td>尾款回收、服务成本归集</td><td>回款完成；毛利可结算</td></tr>
+    <tr><td>责任线</td><td>运维承接责任、SLA 与客户满意度</td><td>交接确认、SLA 计时、客户回访</td><td>G7 未移交不关闭；G8 质保未绑定不移交</td></tr>
+  </tbody>
+</table>
+</div>
+<p><b>关键流程：</b>① 承接确认 → ② 设备台账建档 → ③ 巡检/故障工单 → ④ 备件保障 → ⑤ 质保履约 → ⑥ 项目关闭与复盘回写。</p>
+<p><b>交接与卡点：</b>项目关闭；<b>G7 未移交不关闭</b>、<b>G8 质保未绑定不移交</b>（告警，避免为签质保拖住运维）。</p>
+
+<h3>4.7 四条管理线各自管什么</h3>
+<div class="tw">
+<table>
+  <caption>表 4-1　四条纵向管理线的管理对象、度量与责任人</caption>
+  <thead><tr><th style="width:10%">管理线</th><th style="width:32%">贯穿全程的管理对象</th><th style="width:28%">核心度量</th><th>责任角色</th></tr></thead>
+  <tbody>
+    <tr><td><b>计划线</b></td><td>总体计划、阶段计划、里程碑、周计划、基线、变更</td><td>里程碑按时率、计划偏差天数、周进度自动汇总率</td><td>项目经理 + 经营计划</td></tr>
+    <tr><td><b>物料线</b></td><td>需求行、供应承诺、备料/到货/生产/发运四节点、齐套</td><td>齐套率、承诺达成率、长交期预警及时率</td><td>供应链计划 + 物控</td></tr>
+    <tr><td><b>资金线</b></td><td>预算、付款计划、付款执行、开票、回款、项目毛利</td><td>回款达成率、资金占用天数、项目毛利率</td><td>财务 + 项目经理</td></tr>
+    <tr><td><b>责任线</b></td><td>RACI、交接单、卡点、双签、留痕、考核</td><td>交接线上完成率、留痕覆盖率、卡点豁免率</td><td>PMO + 板块负责人</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">四条线不是四个系统，而是同一批项目数据的四个视角：计划看时间、物料看供给、资金看钱、责任看人。四线共用项目号，指标口径由 PMO 统一。</p>
+
+<p class="small">界定：②管理线层的“责任线”是管理视角——回答“谁对什么负责”；④管控层的交接与卡点是规则执行——回答“凭什么允许推进”。前者定人，后者定闸，二者不重复。</p>
+
+<h3>4.8 五层业务结构</h3>
+<p>
+  一条主轴、三层业务、一层规则、一个底座。这里的“层”不是按“数据/界面”切，而是按“回答哪个问题”切：
+  每层只回答一个问题，也只被上一层的动作触发、被下一层的规则约束。
+</p>
+<div class="tw">
+<table>
+  <caption>表 4-2　五层结构：每层一个问题、一个载体、一个度量</caption>
+  <thead><tr><th style="width:12%">层次</th><th style="width:16%">回答的问题</th><th style="width:34%">内容</th><th style="width:22%">载体</th><th>度量</th></tr></thead>
+  <tbody>
+    <tr><td><b>① 价值流层</b><br /><span class="small">主轴</span></td><td>项目走到哪了？</td><td>立项投决 → 商务手续 → 招采供货 → 工程交付 → 售后运维</td><td>阶段进度条、里程碑</td><td>阶段按时率、全周期时长</td></tr>
+    <tr><td><b>② 管理线层</b><br /><span class="small">纵向</span></td><td>四件事管住了吗？</td><td>计划、物料、资金、责任四条线贯穿五个阶段</td><td>四线看板、周调度会</td><td>计划偏差、齐套率、回款率、交接率</td></tr>
+    <tr><td><b>③ 执行层</b><br /><span class="small">五大板块</span></td><td>谁在哪个节点负责？</td><td>五大板块工作台：待办、在办、交接、卡点处理；RACI 落人</td><td>板块工作台、项目详情</td><td>任务闭环率、超期率</td></tr>
+    <tr><td><b>④ 管控层</b></td><td>凭什么允许推进？</td><td>交接单、卡点规则、权限、豁免、审计留痕</td><td>卡点校验、双签、豁免台账</td><td>卡点通过率、豁免率、留痕覆盖率</td></tr>
+    <tr><td><b>⑤ 数据与集成层</b><br /><span class="small">底座</span></td><td>数据从哪来、看什么？</td><td>项目主数据、统一编号、字段字典、接口、指标、驾驶舱</td><td>项目台账、接口网关、BI</td><td>主数据统一率、接口成功率</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">命名说明：③ 叫“执行层”，指的是“谁来做、在哪个节点做”，对应五大板块；业务能力地图（能做什么）在第 3.2 节，二者不重复。</p>
+
+<h4>四条层间规则</h4>
+<ul>
+  <li><b>依赖单向</b>：执行层的推进只能经管控层校验，不能绕行；数据与集成层只被读，不被业务写入。</li>
+  <li><b>一层一 owner</b>：价值流层 PMO；管理线层 经营计划；执行层 五大板块负责人；管控层 PMO + 审计；数据层 数字化部。</li>
+  <li><b>一层一指标</b>：每层只报一个主指标（见表 4-2 末列），避免指标泛滥。</li>
+  <li><b>不越级</b>：跨层只看两条路——业务动作（执行→价值流）、规则校验（执行→管控），其余均只读。</li>
+</ul>
+
+<h3>4.9 总体架构（平台视图）</h3>
+<p>
+  业务架构回答“怎么运转”，平台视图回答“由什么承载”。两者是上下对应关系：PLP 承上（项目主干与执行），
+  专业系统承下（订单、库存、成本、BOM、制造），数据层横向支撑看板与分析。跨层只走网关。
+</p>
+
+<figure>
+<svg viewBox="0 0 1600 980" role="img" aria-label="总体架构（平台视图）">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+  </defs>
+  <rect width="1600" height="980" fill="#ffffff"/>
+  <text x="40" y="46" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#111827">图 4-2 · 总体架构（平台视图）</text>
+  <text x="40" y="72" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#6b7280">上层是“看得见的主线”，中层是“扛得住的执行”，下层是“各司其职的专业系统”</text>
+
+  <text x="150" y="126" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#374151" text-anchor="end">用户层</text>
+  <rect x="170" y="96" width="1390" height="64" rx="10" fill="#f8fafc" stroke="#e5e7eb"/>
+  <rect x="190" y="108" width="430" height="40" rx="6" fill="#fff" stroke="#d1d5db"/>
+  <text x="206" y="133" font-family="'PingFang SC',sans-serif" font-size="12" fill="#111827">业务用户（PC）· 计划 / 销售 / 供应链 / 工程 / 运维</text>
+  <rect x="640" y="108" width="430" height="40" rx="6" fill="#fff" stroke="#d1d5db"/>
+  <text x="656" y="133" font-family="'PingFang SC',sans-serif" font-size="12" fill="#111827">现场与海外（移动 PWA）· 工单 / 拍照 / 上报</text>
+  <rect x="1090" y="108" width="450" height="40" rx="6" fill="#fff" stroke="#d1d5db"/>
+  <text x="1106" y="133" font-family="'PingFang SC',sans-serif" font-size="12" fill="#111827">管理层 · 驾驶舱 / 预警 / 移动审批</text>
+
+  <path d="M700,160 L700,190" stroke="#94a3b8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+  <path d="M1250,160 L1250,190" stroke="#94a3b8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+
+  <text x="150" y="330" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#0f6b5c" text-anchor="end">PLP 应用</text>
+  <text x="150" y="348" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280" text-anchor="end">Carbon</text>
+  <rect x="170" y="192" width="1390" height="330" rx="10" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="190" y="218" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#0b5449">主干与中枢（做厚）</text>
+  <rect x="190" y="230" width="440" height="120" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="206" y="254" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">P1 平台底座</text>
+  <text x="206" y="276" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">一次建档 · 唯一编号 · 五阶段状态 · 字段字典</text>
+  <text x="206" y="296" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">项目台账 · 多项目筛选 · 权限与数据范围</text>
+  <text x="206" y="316" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">国内 / 海外双模式字段</text>
+  <text x="206" y="338" font-family="'PingFang SC',sans-serif" font-size="10.5" fill="#0b5449">原生能力：project / identifier / 模板</text>
+
+  <rect x="650" y="230" width="440" height="120" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="666" y="254" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">C1 计划中枢</text>
+  <text x="666" y="276" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">标准计划模板按项目类型套用 · 自动生成阶段计划</text>
+  <text x="666" y="296" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">里程碑定义与调整留痕 · 基线对比 · 周进度汇总</text>
+  <text x="666" y="316" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">到期预警 · 逾期升级</text>
+  <text x="666" y="338" font-family="'PingFang SC',sans-serif" font-size="10.5" fill="#0b5449">原生能力：projectElement / milestone / 基线 / 变更请求</text>
+
+  <rect x="1110" y="230" width="430" height="120" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="1126" y="254" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">C4 责任中枢</text>
+  <text x="1126" y="276" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">交接单（内容/人/时间/双签）· 前置条件校验</text>
+  <text x="1126" y="296" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">卡点规则配置 · 阻断/告警/升级 · 闭环记录</text>
+  <text x="1126" y="316" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">留痕与回放</text>
+  <text x="1126" y="338" font-family="'PingFang SC',sans-serif" font-size="10.5" fill="#9f1239">新建：handover / gateRule / gateCheck</text>
+
+  <text x="190" y="384" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#0b5449">阶段工作台（做薄）</text>
+  <rect x="190" y="396" width="320" height="108" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="206" y="420" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">S2 商务手续台</text>
+  <text x="206" y="442" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">八大局要件台账 · 有效期 · 卡点引用</text>
+  <text x="206" y="462" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">国内 / 海外差异</text>
+
+  <rect x="530" y="396" width="320" height="108" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="546" y="420" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">S3 招采供货台</text>
+  <text x="546" y="442" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">需求行 · 采购/到货/生产/发运四节点</text>
+  <text x="546" y="462" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">承诺日期与偏差 · 齐套率</text>
+
+  <rect x="870" y="396" width="320" height="108" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="886" y="420" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">S4 工程交付台</text>
+  <text x="886" y="442" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">现场工单 · 施工进度 · 验收移交</text>
+  <text x="886" y="462" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">海外现场与知识库</text>
+
+  <rect x="1210" y="396" width="330" height="108" rx="7" fill="#fff" stroke="#d1d5db"/>
+  <text x="1226" y="420" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">S5 售后运维台</text>
+  <text x="1226" y="442" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">承接 · 故障工单 · 备件 · 质保合同</text>
+  <text x="1226" y="462" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">服务成本回传</text>
+
+  <path d="M760,522 L760,552" stroke="#0f6b5c" stroke-width="1.8" fill="none" marker-end="url(#ara)"/>
+
+  <text x="150" y="600" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#374151" text-anchor="end">集成层</text>
+  <rect x="170" y="554" width="1390" height="80" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-dasharray="6 4"/>
+  <rect x="190" y="570" width="440" height="48" rx="6" fill="#fff" stroke="#d1d5db"/>
+  <text x="206" y="600" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#111827">接口网关 · 鉴权 / 限流 / 转换 / 重试</text>
+  <rect x="650" y="570" width="440" height="48" rx="6" fill="#fff" stroke="#d1d5db"/>
+  <text x="666" y="600" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#111827">事件总线 · 状态变更 / 回传</text>
+  <rect x="1110" y="570" width="430" height="48" rx="6" fill="#fff" stroke="#d1d5db"/>
+  <text x="1126" y="600" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#111827">文档服务 · 归档 / 预览 / 版本</text>
+
+  <path d="M760,634 L760,664" stroke="#0f6b5c" stroke-width="1.8" fill="none" marker-end="url(#ara)"/>
+  <path d="M1300,664 L1300,634" stroke="#3b4ea0" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+
+  <text x="150" y="800" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#3b4ea0" text-anchor="end">专业系统</text>
+  <text x="150" y="818" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280" text-anchor="end">SoR</text>
+  <rect x="170" y="666" width="1390" height="180" rx="10" fill="#f4f6ff" stroke="#c7cff0"/>
+  <text x="190" y="692" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#3b4ea0">系统记录（System of Record）</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="11">
+    <rect x="190" y="704" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="206" y="728" font-weight="700" fill="#111827">SAP</text><text x="206" y="746" fill="#6b7280">订单 · 库存 · 成本 · 财务</text>
+    <rect x="456" y="704" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="472" y="728" font-weight="700" fill="#111827">SRM</text><text x="472" y="746" fill="#6b7280">寻源 · 招标 · 合同</text>
+    <rect x="722" y="704" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="738" y="728" font-weight="700" fill="#111827">MES</text><text x="738" y="746" fill="#6b7280">制造执行 · 生产进度</text>
+    <rect x="988" y="704" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1004" y="728" font-weight="700" fill="#111827">PDM</text><text x="1004" y="746" fill="#6b7280">BOM · 图纸 · 变更</text>
+    <rect x="1254" y="704" width="286" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1270" y="728" font-weight="700" fill="#111827">WMS</text><text x="1270" y="746" fill="#6b7280">备件 · 出入库</text>
+
+    <rect x="190" y="772" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="206" y="796" font-weight="700" fill="#111827">OA</text><text x="206" y="814" fill="#6b7280">审批 · 待办</text>
+    <rect x="456" y="772" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="472" y="796" font-weight="700" fill="#111827">eGo</text><text x="472" y="814" fill="#6b7280">获客 · 线索</text>
+    <rect x="722" y="772" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="738" y="796" font-weight="700" fill="#111827">OTM</text><text x="738" y="814" fill="#6b7280">工时 · 人效</text>
+    <rect x="988" y="772" width="250" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1004" y="796" font-weight="700" fill="#111827">会议系统</text><text x="1004" y="814" fill="#6b7280">纪要 · 事项跟踪</text>
+    <rect x="1254" y="772" width="286" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1270" y="796" font-weight="700" fill="#111827">成本管控 / 运维监控</text><text x="1270" y="814" fill="#6b7280">口径 · 告警</text>
+  </g>
+
+  <rect x="170" y="866" width="1390" height="86" rx="10" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="190" y="892" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">数据层</text>
+  <text x="190" y="914" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">只读副本 → BI 驾驶舱（Metabase）· 统一指标口径 · Agent 检索与预警（第二批）</text>
+  <text x="190" y="936" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">不承载业务写入；不复制专业系统明细，只沉淀项目维度汇总与过程留痕</text>
+  <text x="190" y="958" font-family="'PingFang SC',sans-serif" font-size="10.5" fill="#9f1239">另：S1 立项投决台、C2 物控中枢、C3 资金中枢见 5.2 应用地图（C2/C3 无独立菜单，以页签形式出现）</text>
+</svg>
+<figcaption>图 4-2　总体架构（平台视图）：PLP 做“主线与执行”，专业系统做“记录与账”，数据层只读。跨层只走网关。</figcaption>
+</figure>
+
+<h3>4.10 五层结构在平台上的承载</h3>
+<div class="tw">
+<table>
+  <caption>表 4-3　五层业务结构 → 平台能力 → 专业系统</caption>
+  <thead><tr><th style="width:14%">层</th><th style="width:26%">业务要素</th><th style="width:32%">平台承载</th><th>专业系统配合</th></tr></thead>
+  <tbody>
+    <tr><td><b>① 价值流层</b></td><td>五阶段、阶段状态、里程碑</td><td>P1 平台底座（阶段状态机）+ C1 计划中枢（里程碑）</td><td>—</td></tr>
+    <tr><td><b>② 管理线层</b></td><td>计划 / 物料 / 资金 / 责任的视图与指标</td><td>四线看板 + 项目概览 + 项目成本视图</td><td>SAP 成本、SRM 到货、MES 生产、WMS 备件</td></tr>
+    <tr><td><b>③ 执行层</b></td><td>板块工作台、待办、交接处理、RACI</td><td>板块工作台 + 项目详情 + 交接处理</td><td>OA 待办与审批</td></tr>
+    <tr><td><b>④ 管控层</b></td><td>交接单、卡点规则、豁免、留痕</td><td>C4 责任中枢 + 审计日志</td><td>OA 审批、SSO 身份</td></tr>
+    <tr><td><b>⑤ 数据与集成层</b></td><td>项目主数据、统一编号、接口、指标</td><td>项目台账 + 接口网关 + BI 驾驶舱</td><td>11 个专业系统（SAP/SRM/MES/PDM/WMS/OTM/OA/eGo/会议/成本/运维监控）</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">读法：下层支撑上层，上层不越过管控层直接改事实；任一层的缺失，都会让上一层“看得见但管不住”。</p>
+
+<h3>4.11 架构原则</h3>
+
+<ul>
+  <li><b>业务主线优先</b>：系统结构跟着价值流和四条管理线走，不为技术方便改业务。</li>
+  <li><b>一数一源</b>：项目主数据在 PLP，订单/库存/成本在专业系统，字段级 owner 制。</li>
+  <li><b>专业系统各司其职</b>：PLP 不重算 MRP、不做库存账、不建财务总账。</li>
+  <li><b>卡点前置、责任可追</b>：关键节点设闸门，交接双签，过程留痕可回放。</li>
+  <li><b>分层不越级</b>：执行层的动作必须经管控层校验，不允许直连数据层改事实。</li>
+  <li><b>可演进</b>：一期只做主干与四个交接点，规则可配置但不过度设计。</li>
+</ul>
+
+<h2 id="s5"><span class="num">05</span>应用架构：五阶段工作台 × 四条主线中枢</h2>
+<p class="lede">
+  应用不按部门切，而按两条轴切：<b>横轴是阶段</b>——谁在什么时候干活，对应五个工作台；<b>纵轴是主线</b>——同一件事跨阶段怎么管住，对应四个中枢。
+  工作台是入口，中枢是能力；中枢没有独立菜单，以页签和服务的形式出现在每个工作台里。
+</p>
+
+<h3>5.1 规划方法：两轴切分，一条底座</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:14%">切法</th><th style="width:28%">得到什么</th><th style="width:28%">好处</th><th>要避免的错法</th></tr></thead>
+  <tbody>
+    <tr><td><b>按阶段切</b></td><td>5 个工作台：立项投决、商务手续、招采供货、工程交付、售后运维</td><td>用户在“我现在干的这一段”里就能完成全部动作</td><td>按部门切 → 系统复制组织结构，跨部门还是要来回跳</td></tr>
+    <tr><td><b>按主线切</b></td><td>4 个中枢：计划、物料、资金、责任</td><td>同一件事（如齐套）跨五个阶段口径一致、只维护一次</td><td>把主线能力散落到各阶段 → 五套算法、五个口径</td></tr>
+    <tr><td><b>一并切</b></td><td>10 个应用域 + 1 个底座（主数据/权限/集成/文档/移动）</td><td>既照顾“当下这一段”，又保证“全程一条线”</td><td>只做工作台 → 变成五个孤立的表单系统</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>5.2 应用地图</h3>
+<figure>
+<svg viewBox="0 0 1600 880" role="img" aria-label="应用架构：五个工作台与四个中枢">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+  </defs>
+  <rect width="1600" height="880" fill="#ffffff"/>
+  <text x="40" y="44" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#111827">图 5-1 · 应用地图：横向五个工作台，纵向四个中枢</text>
+  <text x="40" y="72" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#6b7280">每个工作台都有计划 / 物料 / 资金 / 责任四个页签；页签背后调用的，是同一套中枢服务</text>
+
+  <!-- 工作台 -->
+  <text x="40" y="118" font-family="'PingFang SC',sans-serif" font-size="12" font-weight="700" fill="#0b5449">阶段工作台（用户入口）</text>
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="40" y="130" width="288" height="112" rx="9" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="58" y="156" font-size="13.5" font-weight="700" fill="#111827">S1 立项投决台</text>
+    <text x="58" y="180" font-size="11" fill="#374151">投决 · 预算 · 计划基线</text>
+    <text x="58" y="200" font-size="11" fill="#374151">长交期识别 · 目标责任</text>
+    <text x="58" y="224" font-size="10.5" fill="#9f1239">闸门 G1 无立项不建档</text>
+
+    <rect x="352" y="130" width="288" height="112" rx="9" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="370" y="156" font-size="13.5" font-weight="700" fill="#111827">S2 商务手续台</text>
+    <text x="370" y="180" font-size="11" fill="#374151">合同 · 技术协议 · 要件台账</text>
+    <text x="370" y="200" font-size="11" fill="#374151">付款条件 · 排产许可</text>
+    <text x="370" y="224" font-size="10.5" fill="#9f1239">G2 手续 / G3 协议</text>
+
+    <rect x="664" y="130" width="288" height="112" rx="9" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="682" y="156" font-size="13.5" font-weight="700" fill="#111827">S3 招采供货台</text>
+    <text x="682" y="180" font-size="11" fill="#374151">采购 · 排产 · 生产 · 发运</text>
+    <text x="682" y="200" font-size="11" fill="#374151">齐套 · 到货 · 承诺偏差</text>
+    <text x="682" y="224" font-size="10.5" fill="#9f1239">G4 齐套 / G5 漂移</text>
+
+    <rect x="976" y="130" width="288" height="112" rx="9" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="994" y="156" font-size="13.5" font-weight="700" fill="#111827">S4 工程交付台</text>
+    <text x="994" y="180" font-size="11" fill="#374151">施工 · 调试 · 并网验收</text>
+    <text x="994" y="200" font-size="11" fill="#374151">缺件补供 · 竣工资料</text>
+    <text x="994" y="224" font-size="10.5" fill="#9f1239">G6 资料不齐不验收</text>
+
+    <rect x="1288" y="130" width="288" height="112" rx="9" fill="#ecf7f4" stroke="#8dcdbf"/>
+    <text x="1306" y="156" font-size="13.5" font-weight="700" fill="#111827">S5 售后运维台</text>
+    <text x="1306" y="180" font-size="11" fill="#374151">承接 · 工单 · 备件 · 质保</text>
+    <text x="1306" y="200" font-size="11" fill="#374151">SLA · 复盘回写</text>
+    <text x="1306" y="224" font-size="10.5" fill="#9f1239">G7 关闭 / G8 质保</text>
+  </g>
+
+  <!-- 十字箭头上 -->
+  <path d="M184,258 L184,286" stroke="#0f6b5c" stroke-width="1.6" fill="none" marker-end="url(#ara)"/>
+  <path d="M496,258 L496,286" stroke="#0f6b5c" stroke-width="1.6" fill="none" marker-end="url(#ara)"/>
+  <path d="M808,258 L808,286" stroke="#0f6b5c" stroke-width="1.6" fill="none" marker-end="url(#ara)"/>
+  <path d="M1120,258 L1120,286" stroke="#0f6b5c" stroke-width="1.6" fill="none" marker-end="url(#ara)"/>
+  <path d="M1432,258 L1432,286" stroke="#0f6b5c" stroke-width="1.6" fill="none" marker-end="url(#ara)"/>
+
+  <!-- 中枢 -->
+  <text x="40" y="290" font-family="'PingFang SC',sans-serif" font-size="12" font-weight="700" fill="#3b4ea0">主线中枢（跨阶段服务，无独立菜单）</text>
+  <g font-family="'PingFang SC',sans-serif">
+    <rect x="40" y="300" width="1536" height="72" rx="8" fill="#f4f6ff" stroke="#c7cff0"/>
+    <text x="60" y="328" font-size="14" font-weight="700" fill="#111827">C1 计划中枢</text>
+    <text x="60" y="352" font-size="11" fill="#374151">模板 · 基线 · 周进度 · 偏差预警 · 变更</text>
+    <text x="420" y="330" font-size="11" fill="#6b7280">为五个工作台提供同一套计划口径：谁改计划都走基线变更，周进度自动汇总</text>
+
+    <rect x="40" y="382" width="1536" height="72" rx="8" fill="#f4f6ff" stroke="#c7cff0"/>
+    <text x="60" y="410" font-size="14" font-weight="700" fill="#111827">C2 物控中枢</text>
+    <text x="60" y="434" font-size="11" fill="#374151">需求行 · 供应承诺 · 四节点 · 齐套 · 补供</text>
+    <text x="420" y="412" font-size="11" fill="#6b7280">承接 SAP 的三类物料计划结果，统一算齐套、统一算承诺偏差，各阶段只读结论</text>
+
+    <rect x="40" y="464" width="1536" height="72" rx="8" fill="#f4f6ff" stroke="#c7cff0"/>
+    <text x="60" y="492" font-size="14" font-weight="700" fill="#111827">C3 资金中枢</text>
+    <text x="60" y="516" font-size="11" fill="#374151">预算 · 付款计划 · 开票 · 回款 · 毛利</text>
+    <text x="420" y="494" font-size="11" fill="#6b7280">只读汇总 SAP 财务与发票事实，按项目维度组装；付款条件与回款节点在阶段里触发</text>
+
+    <rect x="40" y="546" width="1536" height="72" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="60" y="574" font-size="14" font-weight="700" fill="#111827">C4 责任中枢</text>
+    <text x="60" y="598" font-size="11" fill="#374151">交接单 · 卡点规则 · 校验 · 豁免 · 留痕</text>
+    <text x="420" y="576" font-size="11" fill="#6b7280">唯一有权“阻断”的中枢：交接双签、卡点三级、豁免带期限，全部落审计</text>
+  </g>
+
+  <!-- 底座 -->
+  <path d="M808,620 L808,646" stroke="#94a3b8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+  <rect x="40" y="650" width="1536" height="86" rx="9" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="60" y="678" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#111827">P1 平台底座</text>
+  <text x="60" y="702" font-family="'PingFang SC',sans-serif" font-size="11" fill="#374151">主数据与编码 · 权限与数据分级 · 集成网关 · 文档与归档 · 移动 PWA · 审计</text>
+  <text x="60" y="724" font-family="'PingFang SC',sans-serif" font-size="10.5" fill="#6b7280">业务不直接写底座；底座只提供能力与事实。</text>
+
+  <text x="40" y="780" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">读图：工作台回答“这一段怎么干”，中枢回答“这件事全程怎么管”；一个页签 = 一个工作台对一个中枢的调用。</text>
+  <text x="40" y="806" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">建设顺序：先立中枢（C1/C4）再铺工作台，避免五个工作台各写一套计划与卡点。</text>
+  <text x="40" y="834" font-family="'PingFang SC',sans-serif" font-size="10.5" fill="#6b7280">注：C2 依赖 SAP/SRM/MES 回传，C3 依赖 SAP 财务与发票，故排在 P2–P4 批次。</text>
+</svg>
+<figcaption>图 5-1　应用地图：5 个工作台 × 4 个中枢 + 1 个底座；中枢不设独立菜单，以页签形式被调用。</figcaption>
+</figure>
+
+<h3>5.3 四条主线中枢</h3>
+<div class="tw">
+<table>
+  <caption>表 5-1　中枢的职责、对象与依赖</caption>
+  <thead><tr><th style="width:10%">中枢</th><th style="width:30%">贯穿五阶段的职责</th><th style="width:24%">关键对象</th><th style="width:18%">主要消费方</th><th>上线批次</th></tr></thead>
+  <tbody>
+    <tr><td><b>C1 计划中枢</b></td><td>模板套用、基线发布、变更评审、周进度汇总、偏差与预警</td><td>element、milestone、baseline、changeRequest</td><td>S1–S5、管理层看板</td><td>P1</td></tr>
+    <tr><td><b>C2 物控中枢</b></td><td>需求行、供应承诺、备料/到货/生产/发运四节点、齐套率、缺件补供</td><td>material、commitment、peg</td><td>S3、S4、S5</td><td>P2</td></tr>
+    <tr><td><b>C3 资金中枢</b></td><td>预算、付款计划与执行、开票节点、回款跟踪、项目毛利</td><td>billing、invoice、cost（只读汇总）</td><td>S1、S2、S4、S5、财务</td><td>P2–P4</td></tr>
+    <tr><td><b>C4 责任中枢</b></td><td>RACI 落人、交接单、卡点规则与校验、豁免与到期、审计留痕</td><td>handover、gateRule、gateCheck、permit</td><td>全部工作台、PMO、审计</td><td>P1–P3</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">中枢的三条纪律：<b>不重复造数据</b>（专业系统出事实）、<b>不承载阶段表单</b>（表单在工作台）、<b>只做跨阶段一致的事</b>（口径、校验、留痕）。</p>
+
+<h3>5.4 五个阶段工作台</h3>
+<div class="tw">
+<table>
+  <caption>表 5-2　每个工作台固定四个页签，内容按阶段差异化</caption>
+  <thead><tr><th style="width:11%">工作台</th><th style="width:21%">计划页签</th><th style="width:22%">物料页签</th><th style="width:21%">资金页签</th><th style="width:17%">责任页签</th><th>阶段闸门</th></tr></thead>
+  <tbody>
+    <tr><td><b>S1 立项投决</b></td><td>总体计划与里程碑基线</td><td>长交期清单、供应可行性</td><td>投资估算、资金计划、回款预测</td><td>投决签字、项目 owner</td><td>G1</td></tr>
+    <tr><td><b>S2 商务手续</b></td><td>手续节点倒排</td><td>BOM 冻结、技术协议、选型</td><td>付款条件、预付款、保函</td><td>要件 owner、合规签字</td><td>G2、G3</td></tr>
+    <tr><td><b>S3 招采供货</b></td><td>开工会、排产里程碑</td><td>需求分流、采购、齐套、四节点</td><td>采购付款、到货款、发票</td><td>齐套责任、供应商评价</td><td>G4、G5</td></tr>
+    <tr><td><b>S4 工程交付</b></td><td>施工计划、并网节点</td><td>到场补件、现场备件、退料</td><td>进度款、验收款、开票</td><td>验收签字、竣工资料</td><td>G6</td></tr>
+    <tr><td><b>S5 售后运维</b></td><td>质保与巡检计划、复盘</td><td>备件计划、换件返修、批次追溯</td><td>质保金、尾款、服务成本</td><td>承接责任、SLA</td><td>G7、G8</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>5.5 应用域与 Carbon 的映射</h3>
+<div class="tw">
+<table>
+  <caption>表 5-3　10 个应用域 + 数据迁移（人月为期望值，与第 11 章合计一致）</caption>
+  <thead><tr><th style="width:16%">应用域</th><th style="width:34%">Carbon 可复用</th><th style="width:26%">新建 / 二开</th><th style="width:8%">批次</th><th>人月</th></tr></thead>
+  <tbody>
+    <tr><td>C1 计划中枢</td><td>projectElement、milestone、基线、变更请求、模板复制</td><td>周进度汇总视图、偏差预警规则</td><td>P1</td><td>6.0</td></tr>
+    <tr><td>C2 物控中枢</td><td>projectElementMaterial、projectPeg、PO、收货、工单</td><td>materialCommitment、四节点看板、齐套计算</td><td>P2</td><td>5.4</td></tr>
+    <tr><td>C3 资金中枢</td><td>合同、开票、收款、项目成本汇总</td><td>付款计划与回款台账、毛利视图</td><td>P2–P4</td><td>3.4</td></tr>
+    <tr><td>C4 责任中枢</td><td>审批（复用 OA）、权限、审计</td><td>handover、gateRule/gateCheck、permit、豁免</td><td>P1–P3</td><td>7.3</td></tr>
+    <tr><td>S1 立项投决台</td><td>项目创建、模板、编号</td><td>投决台账、目标责任书</td><td>P1</td><td>3.0</td></tr>
+    <tr><td>S2 商务手续台</td><td>合同挂接、文档</td><td>要件台账、协议受控、排产许可</td><td>P3</td><td>5.0</td></tr>
+    <tr><td>S3 招采供货台</td><td>PO、收货、发运</td><td>承诺跟踪、缺件补供</td><td>P2</td><td>4.0</td></tr>
+    <tr><td>S4 工程交付台</td><td>serviceJob、job 扩展、文档</td><td>现场工单、验收移交、知识库</td><td>P3</td><td>6.0</td></tr>
+    <tr><td>S5 售后运维台</td><td>serviceJob、customerAsset、库存</td><td>质保合同、备件与 WMS 对接</td><td>P4</td><td>5.2</td></tr>
+    <tr><td>P1 平台底座</td><td>SSO、RLS、审计、PWA、Redis、Inngest</td><td>接口网关、数据分级、BI</td><td>P1–P5</td><td>8.2</td></tr>
+    <tr><td>数据迁移与清洗</td><td>—</td><td>400+ 项目、60 字段</td><td>P1–P2</td><td>5.3</td></tr>
+    <tr><td><b>合计</b></td><td></td><td>其中 2027-06 前交付 <b>45.3</b> 人月</td><td></td><td><b>58.8</b></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>5.6 与原 8 模块的对应与建设顺序</h3>
+<div class="tw">
+<table>
+  <caption>表 5-4　旧模块到新应用域的映射（内容不丢，只是重新切分）</caption>
+  <thead><tr><th style="width:30%">原模块</th><th style="width:30%">并入新应用域</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>M1 项目主数据</td><td>P1 平台底座</td><td>主数据与编码是底座能力，被所有工作台调用</td></tr>
+    <tr><td>C1 计划中枢</td><td>C1 计划中枢</td><td>由“模块”变为“跨阶段服务”</td></tr>
+    <tr><td>C4 责任中枢</td><td>C4 责任中枢</td><td>交接、卡点、豁免、留痕合并为责任中枢</td></tr>
+    <tr><td>M4 手续与要件</td><td>S2 商务手续台</td><td>要件台账 + 协议 + 排产许可</td></tr>
+    <tr><td>M5 招采与供货</td><td>C2 物控中枢 + S3 招采供货台</td><td>能力进中枢，操作进工作台</td></tr>
+    <tr><td>S4 工程交付台</td><td>S4 工程交付台</td><td>现场工单、验收移交</td></tr>
+    <tr><td>S5 售后运维台</td><td>S5 售后运维台</td><td>承接、工单、备件、质保</td></tr>
+    <tr><td>M8 平台公共</td><td>P1 平台底座</td><td>SSO、权限、审计、集成</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>建设顺序（先中枢、后工作台）</h4>
+<ol>
+  <li><b>P1</b>：P1 平台底座 + C1 计划中枢 + C4 责任中枢 + S1 立项投决台 —— 没有中枢，工作台会各写一套。</li>
+  <li><b>P2</b>：C2 物控中枢 + S3 招采供货台 + C3 资金中枢（首版只做付款与回款视图）。</li>
+  <li><b>P3</b>：S2 商务手续台 + S4 工程交付台 —— 与 C4 的交接点联调，跑通 H1–H4。</li>
+  <li><b>P4</b>：S5 售后运维台 + C3 质保金与毛利结算。</li>
+  <li><b>P5</b>：移动离线、BI 驾驶舱、Agent（第二批）。</li>
+</ol>
+
+<h2 id="s6"><span class="num">06</span>数据架构</h2>
+<p class="lede">数据架构的目标只有一个：<strong>项目是唯一主轴，所有单据都能挂到项目号上</strong>。原生对象直接复用，缺的六个模型补齐。</p>
+
+<figure>
+<svg viewBox="0 0 1600 920" role="img" aria-label="PLP 数据模型">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect width="1600" height="920" fill="#ffffff"/>
+  <text x="40" y="46" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#111827">图 5-1 · 数据模型（项目为主轴）</text>
+  <text x="40" y="72" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#6b7280">蓝色=原生复用　绿色=新建　灰色=只读引用（专业系统）</text>
+
+  <!-- project core -->
+  <rect x="640" y="120" width="320" height="118" rx="10" fill="#ecf7f4" stroke="#8dcdbf" stroke-width="1.6"/>
+  <text x="660" y="148" font-family="'PingFang SC',sans-serif" font-size="15" font-weight="700" fill="#111827">项目 project</text>
+  <text x="660" y="172" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">编号 · 名称 · 类型 · 阶段 · 状态</text>
+  <text x="660" y="192" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">owner · 客户 · 地点 · 国内/海外</text>
+  <text x="660" y="214" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生 + 字段字典（60 项）</text>
+
+  <!-- left column -->
+  <rect x="60" y="120" width="260" height="96" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="76" y="146" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">计划元素 element</text>
+  <text x="76" y="168" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">阶段 / 任务 / 交付物 · 责任人与日期</text>
+  <text x="76" y="188" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：projectElement</text>
+  <text x="76" y="206" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">父子树 = WBS</text>
+
+  <rect x="60" y="240" width="260" height="96" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="76" y="266" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">里程碑 milestone</text>
+  <text x="76" y="288" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">定义 / 计划日 / 实际日 / 完成</text>
+  <text x="76" y="308" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：projectMilestone</text>
+
+  <rect x="60" y="360" width="260" height="96" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="76" y="386" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">基线 / 变更</text>
+  <text x="76" y="408" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">计划快照 · 变更评审 · 版本</text>
+  <text x="76" y="428" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：baseline / changeRequest</text>
+
+  <rect x="60" y="480" width="260" height="96" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="76" y="506" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">文档与附件</text>
+  <text x="76" y="528" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">合同 / 批复 / 纪要 / 验收件</text>
+  <text x="76" y="548" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：document + 对象存储</text>
+
+  <!-- right column: new -->
+  <rect x="1280" y="120" width="260" height="96" rx="8" fill="#ffffff" stroke="#0f6b5c" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="1296" y="146" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">交接单 handover</text>
+  <text x="1296" y="168" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">移交内容 / 移交人 / 接收人 / 双签</text>
+  <text x="1296" y="188" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">新建</text>
+
+  <rect x="1280" y="240" width="260" height="96" rx="8" fill="#ffffff" stroke="#0f6b5c" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="1296" y="266" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">卡点规则 / 结果</text>
+  <text x="1296" y="288" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">gateRule · gateCheck</text>
+  <text x="1296" y="308" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">新建</text>
+
+  <rect x="1280" y="360" width="260" height="96" rx="8" fill="#ffffff" stroke="#0f6b5c" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="1296" y="386" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">要件台账 permit</text>
+  <text x="1296" y="408" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">八大局要件 / 有效期 / 状态</text>
+  <text x="1296" y="428" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">新建</text>
+
+  <rect x="1280" y="480" width="260" height="96" rx="8" fill="#ffffff" stroke="#0f6b5c" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="1296" y="506" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">质保合同 warranty</text>
+  <text x="1296" y="528" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">质保期 / 范围 / 免责 / 关联工单</text>
+  <text x="1296" y="548" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">新建</text>
+
+  <!-- middle row: material -->
+  <rect x="380" y="330" width="380" height="110" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="396" y="356" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">物料需求行</text>
+  <text x="396" y="378" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">元素 × 物料 × 数量 × 需求日 × 供应方式</text>
+  <text x="396" y="398" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：projectElementMaterial</text>
+  <text x="396" y="420" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">库存领用 / 外购 / 自制 三类分流</text>
+
+  <rect x="800" y="330" width="380" height="110" rx="8" fill="#ffffff" stroke="#0f6b5c" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="816" y="356" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">供应承诺 commitment</text>
+  <text x="816" y="378" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">单据号 · 承诺日 · 四节点 · 已交数量</text>
+  <text x="816" y="398" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">新建（承接 SAP 三类计划结果）</text>
+  <text x="816" y="420" font-family="'PingFang SC',sans-serif" font-size="11" fill="#6b7280">备料 / 到货 / 生产 / 发运</text>
+
+  <rect x="640" y="480" width="320" height="96" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="660" y="506" font-family="'PingFang SC',sans-serif" font-size="13.5" font-weight="700" fill="#111827">供需配对 peg</text>
+  <text x="660" y="528" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">需求 ↔ 供应（PO 行 / 工单 / 计划动作）</text>
+  <text x="660" y="548" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：projectPeg</text>
+
+  <!-- bottom: execution -->
+  <rect x="380" y="620" width="300" height="92" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="396" y="646" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">采购与收货</text>
+  <text x="396" y="668" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">PO 行 · 到货 · 质检 · 签收</text>
+  <text x="396" y="688" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：purchaseOrder / receipt</text>
+
+  <rect x="700" y="620" width="300" height="92" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="716" y="646" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">生产与发运</text>
+  <text x="716" y="668" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">工单 · 报工 · 装箱 · 发运 · 到场</text>
+  <text x="716" y="688" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：job / shipment</text>
+
+  <rect x="1020" y="620" width="300" height="92" rx="8" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="1036" y="646" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">现场服务与工单</text>
+  <text x="1036" y="668" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">派工 · 处理 · 备件 · 客户资产</text>
+  <text x="1036" y="688" font-family="'PingFang SC',sans-serif" font-size="11" fill="#0b5449">原生：serviceJob / customerAsset</text>
+
+  <!-- read-only -->
+  <rect x="380" y="750" width="940" height="120" rx="10" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="400" y="778" font-family="'PingFang SC',sans-serif" font-size="13" font-weight="700" fill="#111827">只读引用（专业系统，不在 PLP 落库）</text>
+  <text x="400" y="802" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">SAP：销售订单 · 采购订单 · 库存 · 成本 · 发票　　SRM：招标 · 合同　　MES：生产进度　　PDM：BOM · 图纸</text>
+  <text x="400" y="824" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">WMS：备件库存　　OTM：工时人效　　OA：审批　　eGo：线索商机　　会议系统：纪要事项</text>
+  <text x="400" y="850" font-family="'PingFang SC',sans-serif" font-size="11" fill="#9f1239">原则：只存项目号与状态摘要，不复制明细；需要明细时按接口查询或跳转原系统。</text>
+
+  <!-- edges -->
+  <path d="M320,168 L636,168" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+  <path d="M320,288 L636,288" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
+  <path d="M320,408 L636,408" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
+  <path d="M320,528 L636,528" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
+
+  <path d="M960,168 L1276,168" stroke="#94a3b8" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+  <path d="M960,288 L1276,288" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
+  <path d="M960,408 L1276,408" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
+  <path d="M960,528 L1276,528" stroke="#94a3b8" stroke-width="1.3" fill="none"/>
+
+  <path d="M760,238 L760,326" stroke="#0f6b5c" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+  <path d="M800,385 L796,385" stroke="#0f6b5c" stroke-width="1.5" fill="none"/>
+  <path d="M760,440 L760,476" stroke="#0f6b5c" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+  <path d="M720,576 L650,616" stroke="#0f6b5c" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+</svg>
+<figcaption>图 5-1　数据模型：项目为主轴，六类新模型补齐“交接、卡点、要件、质保、承诺”；专业系统明细一律不复制。</figcaption>
+</figure>
+
+<h3>6.1 统一编码与阶段状态机</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:20%">对象</th><th style="width:34%">编码规则</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>项目</td><td><code>PLP-{类型}-{YYYY}-{4位序号}</code></td><td>类型：大储 / 工商业 / 海外；一次生成、全链引用</td></tr>
+    <tr><td>交接单</td><td><code>HO-{项目号}-{阶段码}-{2位}</code></td><td>阶段码：PL 计划 / MK 营销 / SC 供应链 / EN 工程 / OM 运维</td></tr>
+    <tr><td>要件</td><td><code>PM-{项目号}-{要件码}</code></td><td>要件码：并网 / 土地 / 规划 / 施工 / 开工 …</td></tr>
+    <tr><td>质保合同</td><td><code>WT-{项目号}</code></td><td>一个项目一份，可多版本</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>阶段状态机（项目级）：<b>储备 → 立项 → 合同 → 交付中 → 并网验收 → 转运维 → 关闭</b>。每次状态迁移必须由“移交单 + 卡点通过”驱动，不允许手工跳步。</p>
+
+<!-- ===== 6 ===== -->
+<h2 id="s7"><span class="num">07</span>集成架构</h2>
+<p class="lede">11 个系统、21 条接口。原则是：<strong>专业系统出事实，PLP 做跟踪；能查的不复制，要复制的只复制摘要。</strong></p>
+
+<figure>
+<svg viewBox="0 0 1600 720" role="img" aria-label="集成拓扑">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f6b5c"/></marker>
+  </defs>
+  <rect width="1600" height="720" fill="#ffffff"/>
+  <text x="40" y="42" font-family="'PingFang SC',sans-serif" font-size="22" font-weight="700" fill="#111827">图 6-1 · 集成拓扑</text>
+  <text x="40" y="68" font-family="'PingFang SC',sans-serif" font-size="12.5" fill="#6b7280">三区隔离：PLP 应用区 · DMZ 集成层 · 专业系统区；只走网关，不直连数据库</text>
+
+  <rect x="40" y="110" width="440" height="470" rx="10" fill="#ecf7f4" stroke="#8dcdbf"/>
+  <text x="60" y="140" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#0b5449">PLP 应用区</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="12">
+    <rect x="60" y="156" width="400" height="54" rx="6" fill="#fff" stroke="#d1d5db"/><text x="76" y="180" font-weight="700" fill="#111827">项目主干</text><text x="76" y="198" fill="#6b7280">主数据 · 计划 · 交接 · 卡点</text>
+    <rect x="60" y="222" width="400" height="54" rx="6" fill="#fff" stroke="#d1d5db"/><text x="76" y="246" font-weight="700" fill="#111827">板块前端</text><text x="76" y="264" fill="#6b7280">要件 · 供货 · 现场 · 售后</text>
+    <rect x="60" y="288" width="400" height="54" rx="6" fill="#fff" stroke="#d1d5db"/><text x="76" y="312" font-weight="700" fill="#111827">承诺表 + 映射表</text><text x="76" y="330" fill="#6b7280">materialCommitment · idMap</text>
+    <rect x="60" y="354" width="400" height="54" rx="6" fill="#fff" stroke="#d1d5db"/><text x="76" y="378" font-weight="700" fill="#111827">Redis 缓存</text><text x="76" y="396" fill="#6b7280">查询缓存 · 限流 · 锁</text>
+    <rect x="60" y="420" width="400" height="54" rx="6" fill="#fff" stroke="#d1d5db"/><text x="76" y="444" font-weight="700" fill="#111827">PostgreSQL</text><text x="76" y="462" fill="#6b7280">RLS · 审计 · 留痕 · 只读副本</text>
+    <rect x="60" y="486" width="400" height="54" rx="6" fill="#fff" stroke="#d1d5db"/><text x="76" y="510" font-weight="700" fill="#111827">文档服务</text><text x="76" y="528" fill="#6b7280">对象存储 · 预览 · 归档</text>
+  </g>
+
+  <rect x="520" y="110" width="340" height="470" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-dasharray="6 4"/>
+  <text x="540" y="140" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#111827">DMZ 集成层</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="12">
+    <rect x="540" y="160" width="300" height="76" rx="6" fill="#fff" stroke="#d1d5db"/><text x="556" y="184" font-weight="700" fill="#111827">API 网关</text><text x="556" y="204" fill="#6b7280">鉴权 · 限流 · 转换 · 重试</text><text x="556" y="222" fill="#6b7280">21 条契约接口</text>
+    <rect x="540" y="252" width="300" height="76" rx="6" fill="#fff" stroke="#d1d5db"/><text x="556" y="276" font-weight="700" fill="#111827">事件总线</text><text x="556" y="296" fill="#6b7280">状态变更推送 · 回传</text><text x="556" y="314" fill="#6b7280">事件优先，轮询兜底</text>
+    <rect x="540" y="344" width="300" height="76" rx="6" fill="#fff" stroke="#d1d5db"/><text x="556" y="368" font-weight="700" fill="#111827">映射与对账</text><text x="556" y="388" fill="#6b7280">项目号 ↔ 各系统单号</text><text x="556" y="406" fill="#6b7280">日对账 · 差异表</text>
+    <rect x="540" y="436" width="300" height="76" rx="6" fill="#fff" stroke="#d1d5db"/><text x="556" y="460" font-weight="700" fill="#111827">可观测</text><text x="556" y="480" fill="#6b7280">成功率 · P95 · 积压</text><text x="556" y="498" fill="#6b7280">correlationId 贯穿</text>
+  </g>
+
+  <rect x="900" y="110" width="660" height="470" rx="10" fill="#f4f6ff" stroke="#c7cff0"/>
+  <text x="920" y="140" font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700" fill="#3b4ea0">专业系统区（SoR）</text>
+  <g font-family="'PingFang SC',sans-serif" font-size="12">
+    <rect x="920" y="156" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="936" y="180" font-weight="700" fill="#111827">SAP</text><text x="936" y="198" fill="#6b7280">订单 · 库存 · 成本 · 发票</text>
+    <rect x="1240" y="156" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1256" y="180" font-weight="700" fill="#111827">SRM</text><text x="1256" y="198" fill="#6b7280">招标 · 合同 · 到货</text>
+    <rect x="920" y="222" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="936" y="246" font-weight="700" fill="#111827">MES</text><text x="936" y="264" fill="#6b7280">生产进度 · 完工</text>
+    <rect x="1240" y="222" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1256" y="246" font-weight="700" fill="#111827">PDM</text><text x="1256" y="264" fill="#6b7280">BOM · 图纸 · 变更</text>
+    <rect x="920" y="288" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="936" y="312" font-weight="700" fill="#111827">WMS</text><text x="936" y="330" fill="#6b7280">备件 · 出入库</text>
+    <rect x="1240" y="288" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1256" y="312" font-weight="700" fill="#111827">OTM</text><text x="1256" y="330" fill="#6b7280">工时 · 人效</text>
+    <rect x="920" y="354" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="936" y="378" font-weight="700" fill="#111827">OA</text><text x="936" y="396" fill="#6b7280">审批 · 待办</text>
+    <rect x="1240" y="354" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1256" y="378" font-weight="700" fill="#111827">eGo</text><text x="1256" y="396" fill="#6b7280">线索 · 商机</text>
+    <rect x="920" y="420" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="936" y="444" font-weight="700" fill="#111827">成本管控</text><text x="936" y="462" fill="#6b7280">成本口径 · 归集</text>
+    <rect x="1240" y="420" width="300" height="54" rx="6" fill="#fff" stroke="#c7cff0"/><text x="1256" y="444" font-weight="700" fill="#111827">会议 / 运维监控</text><text x="1256" y="462" fill="#6b7280">纪要 · 告警</text>
+  </g>
+
+  <path d="M480,240 L516,240" stroke="#0f6b5c" stroke-width="1.8" fill="none" marker-end="url(#ara)"/>
+  <path d="M860,240 L896,240" stroke="#0f6b5c" stroke-width="1.8" fill="none" marker-end="url(#ara)"/>
+  <path d="M896,330 L860,330" stroke="#3b4ea0" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+  <text x="700" y="596" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#6b7280" text-anchor="middle">实线：PLP → 专业系统（请求/查询）　　虚线：专业系统 → PLP（状态/主数据回传）</text>
+
+  <rect x="40" y="620" width="1520" height="72" rx="10" fill="#f8fafc" stroke="#e5e7eb"/>
+  <text x="60" y="646" font-family="'PingFang SC',sans-serif" font-size="12.5" font-weight="700" fill="#111827">接口纪律</text>
+  <text x="60" y="668" font-family="'PingFang SC',sans-serif" font-size="11.5" fill="#374151">① 一个字段一个主人，单向同步；② 写操作带幂等键；③ 失败进死信可重放；④ 日对账；⑤ 专业系统不可用时 PLP 降级为只读 + 排队。</text>
+</svg>
+<figcaption>图 6-1　集成拓扑：PLP 只与网关对话，网关对 11 个系统做转换与限流；所有状态回传走事件优先、轮询兜底。</figcaption>
+</figure>
+
+<h3>7.1 接口清单（21 条）</h3>
+<div class="tw">
+<table>
+  <caption>表 6-1　按系统分组的接口（PLP ↔ 专业系统）</caption>
+  <thead><tr><th style="width:12%">系统</th><th style="width:8%">方向</th><th style="width:44%">内容</th><th>频率 / 方式</th></tr></thead>
+  <tbody>
+    <tr><td>SAP</td><td>→</td><td>销售订单、采购订单行、库存可用量、成本汇总、发票状态</td><td>事件 + 15min / OData</td></tr>
+    <tr><td>SAP</td><td>←</td><td>项目号、charge number、开票申请</td><td>实时 / OData</td></tr>
+    <tr><td>SRM</td><td>↔</td><td>招标台账、合同、到货计划与实到</td><td>15min / API</td></tr>
+    <tr><td>MES</td><td>→</td><td>生产订单进度、完工入库、异常</td><td>事件 + 5min</td></tr>
+    <tr><td>PDM</td><td>→</td><td>BOM、图纸、变更单（项目相关）</td><td>按需 + 日增量</td></tr>
+    <tr><td>WMS</td><td>↔</td><td>备件库存、出入库、调拨</td><td>15min / API</td></tr>
+    <tr><td>OTM</td><td>→</td><td>工时、人效、作业量</td><td>日批</td></tr>
+    <tr><td>OA</td><td>↔</td><td>审批发起、审批结果回传、待办</td><td>实时 / API</td></tr>
+    <tr><td>eGo</td><td>→</td><td>线索、商机、客户</td><td>15min</td></tr>
+    <tr><td>会议系统</td><td>→</td><td>会议纪要、事项与责任人</td><td>日批</td></tr>
+    <tr><td>成本管控</td><td>→</td><td>成本口径、项目归集结果</td><td>日批</td></tr>
+    <tr><td>运维监控</td><td>→</td><td>电站告警、可用率（售后用）</td><td>小时级</td></tr>
+    <tr><td>BI</td><td>←</td><td>只读副本 / 指标视图</td><td>实时只读</td></tr>
+    <tr><td>简道云</td><td>→</td><td>存量项目只读迁移（一次性）</td><td>迁移期</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ===== 7 ===== -->
+<h3>7.2 接口非功能要求</h3>
+<div class="tw">
+<table>
+  <caption>表 7-2　接口纪律：与功能同等重要，作为验收项</caption>
+  <thead><tr><th style="width:14%">要求</th><th style="width:44%">标准</th><th>验证方式</th></tr></thead>
+  <tbody>
+    <tr><td>幂等</td><td>每笔写带幂等键（对象 + 单据 + 版本），重复提交返回同一结果</td><td>契约测试</td></tr>
+    <tr><td>重试与死信</td><td>4xx 不重试；5xx/超时指数退避 ≤10 次；超限进死信可人工重放</td><td>故障注入</td></tr>
+    <tr><td>对账</td><td>日对账：PLP 已提交 vs 专业系统已存在，差异入差异表并有 owner</td><td>日对账报告</td></tr>
+    <tr><td>降级</td><td>专业系统不可用时 PLP 只读 + 排队，界面标注数据时间；禁止静默失败</td><td>降级演练</td></tr>
+    <tr><td>超时与限流</td><td>查询 800ms、同步写 2s、批量走夜间窗口；与 BASIS 约定并发配额</td><td>压测</td></tr>
+    <tr><td>可观测</td><td>correlationId 贯穿两侧日志；成功率 / P95 / 积压 / 死信四项看板</td><td>监控验收</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="s8"><span class="num">08</span>全链协同与移交</h2>
+<p class="lede">五条泳道、四个交接点、八条卡点。交接点是“责任换手”，卡点是“不许带病推进”。</p>
+
+<div class="lanes">
+  <div class="lane head"><div class="who">阶段 →</div><div class="cell">① 立项投决</div><div class="cell">② 商务手续</div><div class="cell">③ 招采供货</div><div class="cell">④ 工程交付</div><div class="cell">⑤ 售后运维</div></div>
+
+  <div class="lane">
+    <div class="who">经营与计划</div>
+    <div class="cell"><b>项目储备与总体计划</b>模板套用、里程碑、资源与资金策划</div>
+    <div class="cell"><b>立项审批</b>投决链路、预算与回款计划</div>
+    <div class="cell">付款计划、资金执行</div>
+    <div class="cell">周进度调度、偏差纠偏</div>
+    <div class="cell">复盘、经营驾驶舱</div>
+  </div>
+
+  <div class="lane">
+    <div class="who">立项与手续</div>
+    <div class="cell">商机与方案</div>
+    <div class="cell"><b>合同 + 八大局要件</b>要件台账、有效期
+      <span class="ho">H1 计划 → 营销</span></div>
+    <div class="cell">技术协议移交
+      <span class="gate">G3 无协议不下单</span></div>
+    <div class="cell">并网手续、涉网试验资料</div>
+    <div class="cell">质保条款移交</div>
+  </div>
+
+  <div class="lane">
+    <div class="who">招采与供货</div>
+    <div class="cell">—</div>
+    <div class="cell">—</div>
+    <div class="cell"><b>开工会 → 采购/排产 → 生产 → 发运 → 到场签收</b>
+      <span class="ho">H2 营销 → 供应链</span>
+      <span class="gate">G2 手续未办结不排产</span>
+      <span class="gate">G4 未齐套不开工</span></div>
+    <div class="cell">设备到场交接
+      <span class="ho">H3 供应链 → 工程</span></div>
+    <div class="cell">备件供应</div>
+  </div>
+
+  <div class="lane">
+    <div class="who">建设与交付</div>
+    <div class="cell">—</div>
+    <div class="cell">—</div>
+    <div class="cell">—</div>
+    <div class="cell"><b>施工工单 → 调试 → 并网验收 → 竣工</b>
+      <span class="gate">G6 资料不齐不验收</span>
+      <span class="ho">H4 工程 → 运维</span></div>
+    <div class="cell">消缺、技改</div>
+  </div>
+
+  <div class="lane">
+    <div class="who">售后与运维</div>
+    <div class="cell">—</div>
+    <div class="cell">—</div>
+    <div class="cell">—</div>
+    <div class="cell">承接准备</div>
+    <div class="cell"><b>承接 → 故障工单 → 备件 → 质保履约</b>
+      <span class="gate">G7 未移交不关闭项目</span></div>
+  </div>
+</div>
+
+<p class="small">说明：H1–H4 是板块移交点（必须双签）；G2/G3/G4/G6/G7 是卡点（未通过即阻断）；另有 G1 无立项不建档、G5 承诺偏差 &gt;3 天升级、G8 质保未绑定不移交运维，见第 9 章。</p>
+
+<!-- ===== 8 ===== -->
+<h2 id="s9"><span class="num">09</span>交接与卡点机制</h2>
+
+<h3>9.1 交接单（handover）</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">字段组</th><th>内容</th></tr></thead>
+  <tbody>
+    <tr><td>基本信息</td><td>交接单号、项目号、阶段码、发起时间、类型（正常/加急/例外）</td></tr>
+    <tr><td>移交内容</td><td>资料清单（必传项校验）、在办事项、风险与遗留问题、关联单据</td></tr>
+    <tr><td>责任</td><td>移交人、接收人、双方部门、见证人（重大项目）</td></tr>
+    <tr><td>前置条件</td><td>引用的卡点规则与校验结果（未通过不可提交）</td></tr>
+    <tr><td>确认</td><td>双签时间、异议记录、驳回原因、重提次数</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>9.2 八条卡点规则</h3>
+<div class="tw">
+<table>
+  <caption>表 8-1　卡点规则（可配置，不写死）</caption>
+  <thead><tr><th style="width:8%">编号</th><th style="width:18%">卡点</th><th style="width:26%">判定</th><th style="width:14%">时点</th><th style="width:16%">动作</th><th>责任</th></tr></thead>
+  <tbody>
+    <tr><td>G1</td><td>无立项不建档</td><td>无投决/立项批复</td><td>档案创建</td><td><span class="tag no">阻断</span></td><td>经营计划</td></tr>
+    <tr><td>G2</td><td>手续未办结不排产</td><td>关键要件（并网/土地/施工许可）未齐</td><td>排产下达</td><td><span class="tag no">阻断</span></td><td>供应链</td></tr>
+    <tr><td>G3</td><td>无技术协议不下单</td><td>技术协议未签或未同步</td><td>采购下单</td><td><span class="tag no">阻断</span></td><td>供应链</td></tr>
+    <tr><td>G4</td><td>未齐套不开工</td><td>齐套率 &lt; 95%</td><td>工单释放</td><td><span class="tag no">阻断</span></td><td>计划</td></tr>
+    <tr><td>G5</td><td>承诺漂移</td><td>SAP 承诺日 − 需求日 &gt; 3 天</td><td>每次同步</td><td><span class="tag mid">告警 + 升级</span></td><td>物控</td></tr>
+    <tr><td>G6</td><td>资料不齐不验收</td><td>调试/竣工资料缺项</td><td>验收提交</td><td><span class="tag no">阻断</span></td><td>工程</td></tr>
+    <tr><td>G7</td><td>未移交不关闭</td><td>无运维承接确认</td><td>项目关闭</td><td><span class="tag no">阻断</span></td><td>PMO</td></tr>
+    <tr><td>G8</td><td>质保未绑定不移交</td><td>质保合同缺失或未关联设备</td><td>移交运维</td><td><span class="tag mid">告警</span></td><td>售后</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <div class="t">卡点闭环的三件套</div>
+  <p>每条卡点必须同时具备：<b>可配置规则</b>（谁在什么时点、按什么阈值判定）、<b>明确动作</b>（阻断/告警/升级到谁）、<b>闭环记录</b>（谁在何时解除、依据什么）。只亮红灯不做闭环，三个月后就会被人绕过。</p>
+</div>
+
+<!-- ===== 9 ===== -->
+<h4>卡点数据源（逐条落实，P0）</h4>
+<div class="tw">
+<table>
+  <caption>表 9-3　八条卡点的判定数据来自哪里</caption>
+  <thead><tr><th style="width:8%">卡点</th><th style="width:30%">判定所需数据</th><th style="width:28%">数据来源</th><th>数据缺失时的处理</th></tr></thead>
+  <tbody>
+    <tr><td>G1</td><td>投决批复号与批复状态</td><td>OA 投决流程（接口）</td><td>无接口时人工上传批复并留痕，状态由 PMO 维护</td></tr>
+    <tr><td>G2</td><td>关键要件状态与有效期</td><td>要件台账（PLP 自建）</td><td>未录入即视为“未办结”，默认阻断</td></tr>
+    <tr><td>G3</td><td>技术协议签署状态</td><td>合同/协议台账（PLP）或 SRM</td><td>未签署即阻断，不允许人工放行（仅可特批）</td></tr>
+    <tr><td>G4</td><td>齐套率（需求行 × 库存/PO/工单）</td><td>PLP 需求行 + SAP 库存/采购 + MES 工单</td><td>数据缺失按“不齐套”处理，宁可误挡不可漏放</td></tr>
+    <tr><td>G5</td><td>承诺日 vs 需求日</td><td>SAP PO / 生产订单回传</td><td>未回传时按“申请日 + 提前期”估算并标注“预估值”</td></tr>
+    <tr><td>G6</td><td>必传资料清单完成度</td><td>验收/交接模板（PLP）</td><td>缺项即阻断，不允许“先验收后补件”</td></tr>
+    <tr><td>G7</td><td>运维承接确认（H4）</td><td>交接单 handover</td><td>无确认即阻断项目关闭</td></tr>
+    <tr><td>G8</td><td>质保合同绑定关系</td><td>warranty 模型</td><td>未绑定告警并升级，不阻断（避免拖住运维）</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout">
+  <div class="t">豁免与误报（P2）</div>
+  <p>豁免阈值：单月豁免率 &gt;10%，或同一卡点连续 3 次被豁免，自动触发规则复核。误报处理：板块在 1 个工作日内提交“误报说明”，规则 owner 修正后重新校验；误报不计入豁免率，避免用误报掩盖流程问题。</p>
+</div>
+
+<h2 id="s10"><span class="num">10</span>技术架构与部署</h2>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:16%">层</th><th style="width:34%">选型</th><th>理由</th></tr></thead>
+  <tbody>
+    <tr><td>应用框架</td><td>Carbon（React Router SSR + TypeScript）</td><td>模块化单体，单团队可维护；现有项目/计划/采购/工单/权限可直接复用</td></tr>
+    <tr><td>数据库</td><td>PostgreSQL + RLS + 触发器 + 视图</td><td>权限与租户隔离在库内落地，减少应用层遗漏；审计与留痕天然</td></tr>
+    <tr><td>异步</td><td>Inngest + outbox</td><td>状态回传、对账、预警不阻塞主流程</td></tr>
+    <tr><td>缓存</td><td>Redis</td><td>查询缓存、限流、幂等键</td></tr>
+    <tr><td>移动</td><td>PWA（在线优先）</td><td>可安装、支持推送；离线能力单独立项（IndexedDB + 补传）</td></tr>
+    <tr><td>BI</td><td>Metabase / Superset + 只读副本</td><td>驾驶舱不占业务库；指标口径由 PMO 与财务共定</td></tr>
+    <tr><td>集成</td><td>API 网关 + 事件总线</td><td>11 个系统统一入口，限流、转换、可观测</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>10.1 部署与容量</h3>
+<ul>
+  <li><b>环境</b>：开发 / 测试 / 生产三套；测试用脱敏数据，禁止直连生产。</li>
+  <li><b>生产</b>：私有云，应用双副本无状态；PostgreSQL 主备 + WAL 归档；对象存储多副本。</li>
+  <li><b>备份</b>：全备日备 + 连续归档；RPO ≤ 15 分钟、RTO ≤ 4 小时；季度演练恢复。</li>
+  <li><b>发布</b>：按季度版本，迁移前自动备份、失败可回滚；重大变更走评审。</li>
+</ul>
+
+<h3>10.2 许可与合规</h3>
+<div class="callout warn">
+  <div class="t">许可要先算清楚</div>
+  <p>Carbon 核心为 AGPL-3.0；<code>packages/ee</code> 下的审批规则、工作流、客户门户、Agent/MCP、备份等为商业许可。本方案已把“审批”改为复用 OA，可显著降低 EE 依赖；若使用工作流与门户，需单列许可预算。</p>
+</div>
+
+<!-- ===== 10 ===== -->
+<h2 id="s11"><span class="num">11</span>实施路线</h2>
+
+<div class="gantt">
+  <div class="grow"><div class="lbl">P0 方案与 PoC</div><div class="track"><div class="bar amber" style="left:0%;width:8%"></div></div></div>
+  <div class="grow"><div class="lbl">P1 项目主干</div><div class="track"><div class="bar" style="left:8%;width:14%"></div></div></div>
+  <div class="grow"><div class="lbl">P2 供应链贯通</div><div class="track"><div class="bar" style="left:22%;width:22%"></div></div></div>
+  <div class="grow"><div class="lbl">P3 工程与交接</div><div class="track"><div class="bar" style="left:30%;width:28%"></div></div></div>
+  <div class="grow"><div class="lbl">P4 售后与质保</div><div class="track"><div class="bar" style="left:38%;width:24%"></div></div></div>
+  <div class="grow"><div class="lbl">P5 第二批</div><div class="track"><div class="bar blue" style="left:62%;width:38%"></div></div></div>
+  <div class="gaxis"><div></div><div><span>2026-11</span><span>2027-01</span><span>2027-06</span><span>2027-12</span></div></div>
+</div>
+
+<div class="tw">
+<table>
+  <caption>表 10-1　阶段、交付与验收（对齐立项报告里程碑）</caption>
+  <thead><tr><th style="width:10%">阶段</th><th style="width:12%">时间</th><th style="width:40%">交付</th><th style="width:14%">人力</th><th>验收</th></tr></thead>
+  <tbody>
+    <tr><td>P0</td><td>2026-11（4 周）</td><td>字段字典 60 项、五阶段映射、Carbon PoC（主干 + PDM/SAP 两条接口）</td><td>4 人</td><td>Go / No-Go</td></tr>
+    <tr><td>P1</td><td>2026-12 → 2027-01</td><td>主数据、模板、计划/里程碑、项目看板 v0、统一编码（对应 M2 收缩版）</td><td>6 人</td><td>一个真实项目全链可见</td></tr>
+    <tr><td>P2</td><td>2027-02 → 04</td><td>需求行、供应承诺、四节点跟踪、齐套率（对应 M3）</td><td>6 人</td><td>承诺偏差可查、齐套可算</td></tr>
+    <tr><td>P3</td><td>2027-04 → 06</td><td>要件台账、现场工单、验收移交、交接单 + 卡点（对应 M4）</td><td>7 人</td><td>四个交接点线上双签</td></tr>
+    <tr><td>P4</td><td>2027-05 → 06</td><td>承接移交、故障工单、备件、质保合同（对应 M4）</td><td>4 人</td><td>移交→工单闭环可演示</td></tr>
+    <tr><td>P5</td><td>2027-07 → 12</td><td>移动在线/离线、BI 驾驶舱、Agent、招采增强（对应 M5–M7）</td><td>5 人</td><td>现场可用、看板上线</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>11.1 工作量（三点估算）</h3>
+<p>按 PERT 三点估算（乐观 O / 最可能 M / 悲观 P，期望 =（O + 4M + P）/ 6），替代原经验值。单位为人月，含设计、开发、测试与联调，不含业务方投入。</p>
+<div class="tw">
+<table>
+  <caption>表 11-1　工作包三点估算与期望值</caption>
+  <thead><tr><th style="width:28%">工作包</th><th style="width:12%">乐观 O</th><th style="width:12%">最可能 M</th><th style="width:12%">悲观 P</th><th>期望值</th></tr></thead>
+  <tbody>
+    <tr><td>项目主干（M1–M3）</td><td>6</td><td>9</td><td>14</td><td><b>9.3</b></td></tr>
+    <tr><td>经营与计划</td><td>4</td><td>6</td><td>9</td><td><b>6.2</b></td></tr>
+    <tr><td>立项与手续</td><td>5</td><td>7</td><td>10</td><td><b>7.2</b></td></tr>
+    <tr><td>招采与供货</td><td>5</td><td>8</td><td>12</td><td><b>8.2</b></td></tr>
+    <tr><td>建设与交付</td><td>6</td><td>9</td><td>13</td><td><b>9.2</b></td></tr>
+    <tr><td>售后与质保</td><td>3</td><td>5</td><td>8</td><td><b>5.2</b></td></tr>
+    <tr><td>平台公共</td><td>5</td><td>8</td><td>12</td><td><b>8.2</b></td></tr>
+    <tr><td>数据迁移与清洗</td><td>3</td><td>5</td><td>9</td><td><b>5.3</b></td></tr>
+    <tr><td><b>合计</b></td><td><b>37</b></td><td><b>57</b></td><td><b>87</b></td><td><b>58.8（约 59）</b></td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout warn">
+  <div class="t">口径更正与资源判断</div>
+  <p>v1.5 中“2027-06 前 34–36 人月”是漏算（漏了经营计划、立项手续、售后），本版更正为：<b>P1–P4 期望约 45 人月</b>；平台与迁移按 40% 分摊到上半年（约 5.4），故上半年总投入约 <b>50 人月</b>。按 7 个月 × 7 人 = 49 人月，处于<b>临界</b>，必须三选一：<br />
+  ① 增补 1–2 人；② 把“经营与计划”的周报/复盘放到第二批；③ 接受 2–3 周缓冲消耗。</p>
+</div>
+
+<h2 id="s12"><span class="num">12</span>治理与运维</h2>
+<h3>12.1 治理机制</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:18%">机制</th><th>内容</th></tr></thead>
+  <tbody>
+    <tr><td>数据 owner</td><td>60 个核心字段逐字段指定业务 owner；争议由 PMO 裁决，重大分歧报数字化委员会</td></tr>
+    <tr><td>需求变更</td><td>板块书面确认 → 影响评估（范围/工期/成本）→ 变更单 → 委员会审批（重大）</td></tr>
+    <tr><td>发布节奏</td><td>季度版本 + 紧急补丁；迁移前备份，回滚脚本随版本交付</td></tr>
+    <tr><td>验收口径</td><td>功能演示 + 数据核对 + 业务签字；流程类指标由业务部门确认，不由 IT 自证</td></tr>
+    <tr><td>运维 SLA</td><td>工作时间可用性 ≥99.5%；故障分级与响应时限；月度运行报告</td></tr>
+    <tr><td>线下停用</td><td>每个板块上线即公布“线下台账停用时间表”，与考核挂钩</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>12.2 数据分级与权限矩阵</h3>
+<div class="tw">
+<table>
+  <caption>表 12-1　数据分级（决定谁能看、谁能改、留什么痕）</caption>
+  <thead><tr><th style="width:12%">级别</th><th style="width:34%">典型数据</th><th style="width:30%">访问控制</th><th>审计要求</th></tr></thead>
+  <tbody>
+    <tr><td>L1 公开</td><td>项目名称、阶段、里程碑（对外可披露）</td><td>全员可见</td><td>常规日志</td></tr>
+    <tr><td>L2 内部</td><td>计划、进度、交接记录、卡点结果</td><td>按板块 + 项目成员授权</td><td>操作留痕</td></tr>
+    <tr><td>L3 敏感</td><td>合同金额、成本、毛利、供应商价格</td><td>财务 + 项目经理 + 管理层</td><td>访问即留痕，导出需审批</td></tr>
+    <tr><td>L4 受限</td><td>客户信息、海外属地合规文件、涉密项目</td><td>按项目白名单，最小必要</td><td>全量审计 + 定期复核</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="tw">
+<table>
+  <caption>表 12-2　权限矩阵（板块 × 角色，R 可读 / W 可写 / A 审批 / — 不可见）</caption>
+  <thead><tr><th style="width:22%">角色</th><th>计划</th><th>商务</th><th>供应链</th><th>工程</th><th>运维</th><th>财务</th></tr></thead>
+  <tbody>
+    <tr><td>项目经理</td><td>W</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
+    <tr><td>板块成员</td><td>R</td><td>本板块 W</td><td>本板块 W</td><td>本板块 W</td><td>本板块 W</td><td>—</td></tr>
+    <tr><td>板块负责人</td><td>R</td><td>A（本板块）</td><td>A（本板块）</td><td>A（本板块）</td><td>A（本板块）</td><td>R</td></tr>
+    <tr><td>PMO</td><td>W</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
+    <tr><td>管理层</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>12.3 变更管理</h3>
+<ol>
+  <li><b>提出</b>：板块或项目经理提交变更申请，写清原因、影响范围（范围/工期/成本/接口）。</li>
+  <li><b>评估</b>：PMO 在 3 个工作日内出影响评估，涉及范围或预算的同步财务。</li>
+  <li><b>分级审批</b>：一般变更（不影响里程碑）由 PMO 批；重大变更（影响里程碑/预算/跨板块）报数字化委员会。</li>
+  <li><b>实施与回写</b>：变更单关联到项目基线，实施后更新基线并留痕；未关联变更单的计划调整一律视为违规。</li>
+</ol>
+
+<h2 id="s13"><span class="num">13</span>风险与对策</h2>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">风险</th><th style="width:8%">概率</th><th style="width:8%">影响</th><th>对策</th></tr></thead>
+  <tbody>
+    <tr><td>M2 范围过大导致首战延期</td><td><span class="tag mid">中高</span></td><td><span class="tag no">高</span></td><td>收缩为“主数据 + 计划 + 看板”，流程暂用 OA/eGo</td></tr>
+    <tr><td>数据迁移被低估</td><td><span class="tag no">高</span></td><td><span class="tag no">高</span></td><td>单列 5 人月；先做 20 个项目试点迁移</td></tr>
+    <tr><td>11 个系统接口排期不可控</td><td><span class="tag no">高</span></td><td><span class="tag no">高</span></td><td>M1 前冻结接口清单与责任方；SAP/SRM/MES 优先</td></tr>
+    <tr><td>移动离线做不出来</td><td><span class="tag mid">中</span></td><td><span class="tag no">高</span></td><td>离线单独立项、单独验收；先上在线版</td></tr>
+    <tr><td>外部团队技术栈不匹配</td><td><span class="tag mid">中</span></td><td><span class="tag mid">中</span></td><td>PoC 验证；合同写明技术栈与代码评审要求</td></tr>
+    <tr><td>EE 许可与运维预算漏项</td><td><span class="tag mid">中</span></td><td><span class="tag mid">中</span></td><td>审批复用 OA 降依赖；许可与运维单列预算</td></tr>
+    <tr><td>线下台账不停用</td><td><span class="tag no">高</span></td><td><span class="tag mid">中</span></td><td>停用时间表 + 考核 + 数据自动带入减少填报</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ===== 13 ===== -->
+<h2 id="s14"><span class="num">14</span>附录</h2>
+<h3>14.1 验收指标（承接立项报告）</h3>
+<ul>
+  <li>交付主线核心流程线上化率 ≥ 95%；板块移交线上完成率 100%</li>
+  <li>关键节点留痕覆盖率 100%，过程可完整回溯</li>
+  <li>项目主数据统一率 100%，板块重复录入项清零</li>
+  <li>里程碑自动预警覆盖率 100%，周进度系统自动汇总</li>
+</ul>
+
+<h3>14.2 术语</h3>
+<div class="tw">
+<table>
+  <thead><tr><th style="width:22%">术语</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td>PLP</td><td>项目全生命周期运营管理平台</td></tr>
+    <tr><td>SoR / SoE</td><td>系统记录 / 业务交互层</td></tr>
+    <tr><td>交接单（H）</td><td>板块之间责任换手的双签记录</td></tr>
+    <tr><td>卡点（G）</td><td>节点前置校验，未通过即阻断或升级</td></tr>
+    <tr><td>承诺（commitment）</td><td>对需求行的供应承诺：单据号、数量、承诺日、四节点</td></tr>
+    <tr><td>齐套率</td><td>工单释放前，BOM 行中已具备供应的比例</td></tr>
+    <tr><td>价值流</td><td>项目从立项投决到售后运维的五个阶段序列</td></tr>
+    <tr><td>交接点（H）</td><td>板块之间责任换手的双签节点</td></tr>
+    <tr><td>豁免</td><td>卡点在例外情况下带期限放行，需 L3 审批并到期恢复</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>14.3 评审需确认的 6 件事</h3>
+<ol>
+  <li>项目主数据归属 PLP、专业系统只读回传 —— 是否认可？</li>
+  <li>M2 收缩为“主数据 + 计划 + 看板”—— 是否同意？</li>
+  <li>交接单与卡点列为一号工程 —— 资源是否到位？</li>
+  <li>审批复用 OA —— 是否与 OA 团队确认接口？</li>
+  <li>移动离线单独立项 —— 预算是否单列？</li>
+  <li>EE 许可范围（工作流/门户/Agent）—— 采购决策？</li>
+</ol>
+
+<footer class="doc-foot">
+  <span>PLP 蓝图方案 v1.7 · 2026-11-18</span>
+  <span>推荐架构：Carbon 主干 + 专业系统各司其职；接口与卡点规则以评审冻结版为准。</span>
+</footer>
+<h3>14.4 评审意见闭环表（v1.6）</h3>
+<div class="tw">
+<table>
+  <caption>表 14-1　评审问题与落实位置</caption>
+  <thead><tr><th style="width:8%">编号</th><th style="width:34%">评审问题</th><th style="width:20%">v1.6 落实</th><th>状态</th></tr></thead>
+  <tbody>
+    <tr><td>P0-1</td><td>M2 收缩未经授权</td><td>2.1 范围变更提示 + 14.3 决策项</td><td><span class="tag mid">待委员会批准</span></td></tr>
+    <tr><td>P0-2</td><td>工作量无估算依据</td><td>11.1 三点估算 + 口径更正</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P0-3</td><td>卡点数据源未定义</td><td>9.2 表 9-3 数据源 + 缺失处理</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P1-1</td><td>缺风险线/质量线</td><td>评审决定不新增纵向线；风险由卡点 + 周报 + 复盘承载</td><td><span class="tag gray">不采纳（已记录）</span></td></tr>
+    <tr><td>P1-2</td><td>责任线与管控层重叠</td><td>4.7 末段界定“定人 vs 定闸”</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P1-3</td><td>接口缺非功能要求</td><td>7.2 幂等/重试/对账/降级/限流/可观测</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P1-4</td><td>RACI 缺海外多主体</td><td>3.5 海外 RACI 变体</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P1-5</td><td>验收指标无基线</td><td>3.7 基线测量说明</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P1-6</td><td>数据分级与权限缺失</td><td>12.2 分级表 + 权限矩阵</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P2-1</td><td>豁免/误报机制</td><td>9.2 豁免阈值 + 误报流程</td><td><span class="tag ok">已落实</span></td></tr>
+    <tr><td>P2-2</td><td>变更管理过简</td><td>12.3 变更管理四步</td><td><span class="tag ok">已落实</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+  var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'));}).filter(Boolean);
+  if(!('IntersectionObserver' in window)||!targets.length)return;
+  var vis=new Map();
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){vis.set(e.target.id,e.isIntersecting?e.intersectionRatio:0);});
+    var best=null,r=0;vis.forEach(function(v,k){if(v>r){r=v;best=k;}});
+    if(!best)return;
+    links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+best);});
+  },{rootMargin:'-10% 0px -70% 0px',threshold:[0,.2,.6,1]});
+  targets.forEach(function(t){io.observe(t);});
+})();
+</script>
+</body>
+</html>
